@@ -1,7 +1,7 @@
 # Rust build artifacts
 /target/
 Cargo.lock
-
+test-ledger
 # Node.js and npm files
 /node_modules/
 /package-lock.json
