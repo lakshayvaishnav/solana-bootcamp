@@ -1,0 +1,32 @@
+# Rust build artifacts
+/target/
+Cargo.lock
+
+# Node.js and npm files
+/node_modules/
+/package-lock.json
+/.npm/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Backup files
+*~
+*.bak
+*.tmp
+
+# Log files
+*.log
+
+# Environment variables
+.env
+
+# Other files to ignore
+*.rs.bk  # Backup of Rust source files
