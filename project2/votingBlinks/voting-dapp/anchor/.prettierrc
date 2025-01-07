@@ -1,0 +1,7 @@
+{
+  "plugins": ["./node_modules/prettier-plugin-rust"],
+  "tabWidth": 4,
+  "printWidth": 200,
+  "singleQuote": true,
+  "trailingComma": "es5"
+}
