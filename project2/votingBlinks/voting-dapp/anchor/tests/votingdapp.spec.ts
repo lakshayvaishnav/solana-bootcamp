@@ -16,7 +16,7 @@ describe('votingdapp', () => {
   beforeAll(async()=> {
 //     context = await startAnchor("",[{name:"votingdapp",programId:votingProgramAddress}],[])
 //     provider = new BankrunProvider(context);
-// `` 
+// ``  
 //     votingProgram = new Program<Votingdapp>(
 //      IDL,
 //      provider
