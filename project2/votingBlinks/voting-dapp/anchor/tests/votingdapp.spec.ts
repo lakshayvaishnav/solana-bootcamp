@@ -1,7 +1,6 @@
 import {Program} from '@coral-xyz/anchor'
 import { PublicKey} from '@solana/web3.js'
 import {Votingdapp} from '../target/types/votingdapp'
-import { BankrunProvider, startAnchor } from 'anchor-bankrun'
 import * as anchor from '@coral-xyz/anchor';
 const IDL = require("../target/idl/votingdapp.json")
 
@@ -11,16 +10,17 @@ describe('votingdapp', () => {
 
   let context;
   let provider;
-  let votingProgram : Program<Votingdapp>;
+  anchor.setProvider(anchor.AnchorProvider.env())
+  let votingProgram =  anchor.workspace.votingdapp as Program<Votingdapp>;
 
   beforeAll(async()=> {
-    context = await startAnchor("",[{name:"votingdapp",programId:votingProgramAddress}],[])
-    provider = new BankrunProvider(context);
-
-    votingProgram = new Program<Votingdapp>(
-     IDL,
-     provider
-   )
+//     context = await startAnchor("",[{name:"votingdapp",programId:votingProgramAddress}],[])
+//     provider = new BankrunProvider(context);
+// `` 
+//     votingProgram = new Program<Votingdapp>(
+//      IDL,
+//      provider
+//    )
   })
 
   it("initializes the poll", async() => {
@@ -40,39 +40,39 @@ describe('votingdapp', () => {
   },)
 
   it("Initializes the candidate", async() => {
-    await votingProgram.methods.initializeCandidate("lxsh",new anchor.BN(1)).rpc();
-    await votingProgram.methods.initializeCandidate("don",new anchor.BN(1)).rpc();
+    await votingProgram.methods.initializeCandidate("Samurai",new anchor.BN(1)).rpc();
+    await votingProgram.methods.initializeCandidate("Shinobi",new anchor.BN(1)).rpc();
 
-    const [lxshAddress] = PublicKey.findProgramAddressSync(
-      [new anchor.BN(1).toArrayLike(Buffer,'le',8), Buffer.from("lxsh")],
+    const [SamuraiAddress] = PublicKey.findProgramAddressSync(
+      [new anchor.BN(1).toArrayLike(Buffer,'le',8), Buffer.from("Samurai")],
       votingProgramAddress
     )
 
-    const [donAddress] = PublicKey.findProgramAddressSync(
-      [new anchor.BN(1).toArrayLike(Buffer,'le',8), Buffer.from("don")],
+    const [ShinobiAddress] = PublicKey.findProgramAddressSync(
+      [new anchor.BN(1).toArrayLike(Buffer,'le',8), Buffer.from("Shinobi")],
       votingProgramAddress
     )
-    const lxshCandidate = await votingProgram.account.candidate.fetch(lxshAddress);
-    const donCandidate = await votingProgram.account.candidate.fetch(donAddress);
+    const SamuraiCandidate = await votingProgram.account.candidate.fetch(SamuraiAddress);
+    const ShinobiCandidate = await votingProgram.account.candidate.fetch(ShinobiAddress);
 
-    expect(lxshCandidate.candidateName).toEqual("lxsh")
-    expect(lxshCandidate.candidateVotes.toNumber()).toEqual(0)
+    expect(SamuraiCandidate.candidateName).toEqual("Samurai")
+    expect(SamuraiCandidate.candidateVotes.toNumber()).toEqual(0)
     
-    expect(donCandidate.candidateName).toEqual("don")
-    expect(donCandidate.candidateVotes.toNumber()).toEqual(0)
+    expect(ShinobiCandidate.candidateName).toEqual("Shinobi")
+    expect(ShinobiCandidate.candidateVotes.toNumber()).toEqual(0)
 
-    console.log("✅ the lakshay candidate : ", lxshCandidate);
-    console.log("✅ the don candidate : ", donCandidate);
+    console.log("✅ the smaruai candidate : ", SamuraiCandidate);
+    console.log("✅ the shinobi candidate : ", ShinobiCandidate);
   })
 
   it("vote", async () => {
-      await votingProgram.methods.vote("lxsh",new anchor.BN(1)).rpc()
+      await votingProgram.methods.vote("Samurai",new anchor.BN(1)).rpc()
 
-      const [lxshAddress] = PublicKey.findProgramAddressSync(
-        [new anchor.BN(1).toArrayLike(Buffer,'le',8), Buffer.from("lxsh")],
+      const [SamuraiAddress] = PublicKey.findProgramAddressSync(
+        [new anchor.BN(1).toArrayLike(Buffer,'le',8), Buffer.from("Samurai")],
         votingProgramAddress
       )
-      const lxshCandidate = await votingProgram.account.candidate.fetch(lxshAddress);
-      expect(lxshCandidate.candidateVotes.toNumber()).toEqual(1);
+      const SamuraiCandidate = await votingProgram.account.candidate.fetch(SamuraiAddress);
+      expect(SamuraiCandidate.candidateVotes.toNumber()).toEqual(1);
   })
 })
