@@ -31,6 +31,28 @@ pub mod crudapp {
         journal_entry.message = message;
         Ok(())
     }
+
+    pub fn delete_journal_entry(_ctx: Context<DeleteEntry>, _title: String) -> Result<()> {
+        Ok(())
+    }
+}
+
+#[derive(Accounts)]
+#[instruction(title:String)]
+pub struct DeleteEntry<'info> {
+    #[account(
+    mut,
+    seeds = [title.as_bytes(),owner.key().as_ref()],
+    bump,
+    // only the owner can close this account
+    close = owner
+  )]
+    pub journal_entry: Account<'info, JournalEntyState>,
+
+    #[account(mut)]
+    pub owner: Signer<'info>,
+
+    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
@@ -66,7 +88,7 @@ pub struct UpdateEntry<'info> {
     pub system_program: Program<'info, System>,
 
     #[account(mut)]
-    pub owner: Signer<'info>
+    pub owner: Signer<'info>,
 }
 
 #[account]
