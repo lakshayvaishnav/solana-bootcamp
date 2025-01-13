@@ -4,6 +4,7 @@ use anchor_lang::prelude::*;
 
 declare_id!("coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF");
 
+// functions under program modules are callable via transactions
 #[program]
 pub mod votingdapp {
 
@@ -93,13 +94,7 @@ pub struct InitalizeCandidate<'info> {
     pub system_program: Program<'info, System>,
 }
 
-#[account]
-#[derive(InitSpace)]
-pub struct Candidate {
-    #[max_len(200)]
-    pub candidate_name: String,
-    pub candidate_votes: u64,
-}
+
 
 #[derive(Accounts)]
 #[instruction(poll_id:u64)]
@@ -129,4 +124,14 @@ pub struct Poll {
     pub poll_start: u64,
     pub poll_end: u64,
     pub candidate_amount: u64,
+}
+
+
+// account structs defines the data stored in accounts.
+#[account] // this makes it as an on chain account
+#[derive(InitSpace)]
+pub struct Candidate {
+    #[max_len(200)]
+    pub candidate_name: String,
+    pub candidate_votes: u64,
 }

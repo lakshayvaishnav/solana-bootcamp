@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/crudapp.json`.
  */
 export type Crudapp = {
-  "address": "coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF",
+  "address": "HHi3bR2Qc9XwEowF4DA9GxfC8hiY5aXuwyaMvDiCo71X",
   "metadata": {
     "name": "crudapp",
     "version": "0.1.0",

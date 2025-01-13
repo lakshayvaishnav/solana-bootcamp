@@ -22,9 +22,13 @@ export function useCrudappProgram() {
   const { cluster } = useCluster();
   const transactionToast = useTransactionToast();
   const provider = useAnchorProvider();
-  const programId = useMemo(
-    () => getCrudappProgramId(cluster.network as Cluster),
-    [cluster]
+  // const programId = useMemo(
+  //   () => getCrudappProgramId(cluster.network as Cluster),
+  //   [cluster]
+  // );
+
+  const programId = new PublicKey(
+    "HHi3bR2Qc9XwEowF4DA9GxfC8hiY5aXuwyaMvDiCo71X"
   );
   const program = useMemo(
     () => getCrudappProgram(provider, programId),
@@ -51,6 +55,10 @@ export function useCrudappProgram() {
       accounts.refetch();
     },
     onError: (error) => {
+      console.log(
+        "✅✅✅✅✅✅✅ this is the program id ",
+        programId.toBase58()
+      );
       toast.error(`Error creating entry: ${error.message}`);
     },
   });
@@ -59,7 +67,7 @@ export function useCrudappProgram() {
     accounts,
     getProgramAccount,
     createEntry,
-    programId
+    programId,
   };
 }
 
