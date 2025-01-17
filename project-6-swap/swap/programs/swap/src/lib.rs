@@ -13,9 +13,13 @@ declare_id!("9S1XZBPET6WKHFA5K2X1f3ZMEfY7pJWLeUe8XsxNbtx");
 
 #[program]
 pub mod swap {
+
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>) -> Result<()> {
-        initialize::handler(ctx)
+    pub fn make_offer(context: Context<MakeOffer>) -> Result<()> {
+        instructions::make_offer::send_offered_tokens_to_vault()?;
+        instructions::make_offer::save_offer()?;
+
+        Ok(())
     }
 }
