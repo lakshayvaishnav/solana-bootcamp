@@ -28,7 +28,6 @@ pub mod crudapp2 {
     ) -> Result<()> {
         let journal_entry = &mut ctx.accounts.journal_entry;
         journal_entry.message = message;
-        journal_entry.title = title;
         Ok(())
     }
 

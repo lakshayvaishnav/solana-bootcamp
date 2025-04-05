@@ -100,7 +100,12 @@ export function JournalCard({ account }: { account: PublicKey }) {
   return (
     <div className="bg-black/10   flex justify-between w-full">
       <div className="flex flex-col gap-2 ">
-        <h1> Title : {accountQuery.data?.title} </h1>
+        <h2
+          className="card-title  cursor-pointer"
+          onClick={() => accountQuery.refetch()}
+        >
+          {accountQuery.data?.title}
+        </h2>
         <p>{accountQuery.data?.message}</p>
         <textarea
           className="bg-slate-800"
@@ -118,7 +123,7 @@ export function JournalCard({ account }: { account: PublicKey }) {
               if (accountQuery.data.title) {
                 updateEntry.mutateAsync({
                   title: accountQuery.data.title,
-                  message: accountQuery.data.message,
+                  message: message,
                 });
               }
             }}
