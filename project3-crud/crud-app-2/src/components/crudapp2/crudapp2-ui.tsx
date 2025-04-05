@@ -78,9 +78,9 @@ export function Crudapp2List() {
     );
   }
   return (
-    <div>
-      {accounts.data?.map((account)=> (
-        <JournalCard account={account.publicKey}/>
+    <div className="flex  justify-between">
+      {accounts.data?.map((account) => (
+        <JournalCard account={account.publicKey} />
       ))}
     </div>
   );
@@ -91,12 +91,33 @@ export function JournalCard({ account }: { account: PublicKey }) {
     account,
   });
 
+  const handleDelete = async (title: string) => {
+    alert("button clicked");
+    await deleteEntry.mutateAsync({ title });
+  };
+
   return (
-    <div className="bg-black/10 items-center">
-      <div>
+    <div className="bg-black/10   flex justify-between w-full">
+      <div className="flex flex-col gap-2 ">
         <h1> Title : {accountQuery.data?.title} </h1>
         <p>{accountQuery.data?.message}</p>
       </div>
+      {accountQuery.data?.title && (
+        <div className="flex flex-col gap-3">
+          <button className="btn btn-accent">Update entry</button>
+          <button
+            className="btn btn-error"
+            onClick={() => {
+              if (accountQuery.data?.title) {
+                alert("button clicked");
+                deleteEntry.mutateAsync({ title: accountQuery.data.title });
+              }
+            }}
+          >
+            Delete entry
+          </button>
+        </div>
+      )}
     </div>
   );
 }
