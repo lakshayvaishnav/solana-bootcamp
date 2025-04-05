@@ -9,6 +9,7 @@ import {
   useCrudapp2ProgramAccount,
 } from "./crudapp2-data-access";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { publicKey } from "@coral-xyz/anchor/dist/cjs/utils";
 
 export function Crudapp2Create() {
   const [message, setmessage] = useState("");
@@ -90,21 +91,40 @@ export function JournalCard({ account }: { account: PublicKey }) {
   const { accountQuery, deleteEntry, updateEntry } = useCrudapp2ProgramAccount({
     account,
   });
-
-  const handleDelete = async (title: string) => {
-    alert("button clicked");
-    await deleteEntry.mutateAsync({ title });
-  };
+  const [message, setmessage] = useState("");
+  const { publicKey } = useWallet();
+  if (!publicKey) {
+    return <div>connect your wallet...</div>;
+  }
 
   return (
     <div className="bg-black/10   flex justify-between w-full">
       <div className="flex flex-col gap-2 ">
         <h1> Title : {accountQuery.data?.title} </h1>
         <p>{accountQuery.data?.message}</p>
+        <textarea
+          className="bg-slate-800"
+          placeholder="update message here"
+          onChange={(e) => {
+            setmessage(e.target.value);
+          }}
+        ></textarea>
       </div>
       {accountQuery.data?.title && (
         <div className="flex flex-col gap-3">
-          <button className="btn btn-accent">Update entry</button>
+          <button
+            className="btn btn-accent"
+            onClick={() => {
+              if (accountQuery.data.title) {
+                updateEntry.mutateAsync({
+                  title: accountQuery.data.title,
+                  message: accountQuery.data.message,
+                });
+              }
+            }}
+          >
+            Update entry
+          </button>
           <button
             className="btn btn-error"
             onClick={() => {

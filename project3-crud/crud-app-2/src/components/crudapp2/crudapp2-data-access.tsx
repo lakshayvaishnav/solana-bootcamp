@@ -1,7 +1,7 @@
 "use client";
 
 import { getCrudapp2Program, getCrudapp2ProgramId } from "@project/anchor";
-import { useConnection } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { Cluster, Keypair, PublicKey } from "@solana/web3.js";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
@@ -69,13 +69,12 @@ export function useCrudapp2Program() {
     },
   });
 
-
   return {
     program,
     programId,
     accounts,
     getProgramAccount,
-    createEntry
+    createEntry,
   };
 }
 
@@ -89,15 +88,15 @@ export function useCrudapp2ProgramAccount({ account }: { account: PublicKey }) {
     queryFn: () => program.account.journalEntryState.fetch(account),
   });
 
-  
-  const updateEntry = useMutation<string, Error, CreateEntryArgs>({
+  const updateEntry = useMutation({
     mutationKey: ["crudapp2", "updateEntry", { cluster }],
-    mutationFn: async ({ title, message, owner }) => {
-      const [programAddress] = PublicKey.findProgramAddressSync(
-        [Buffer.from(title), owner.toBuffer()],
-        programId
-      );
-
+    mutationFn: async ({
+      title,
+      message,
+    }: {
+      title: string;
+      message: string;
+    }) => {
       return program.methods.updateJournalEntry(title, message).rpc();
     },
     onSuccess: (signature) => {
