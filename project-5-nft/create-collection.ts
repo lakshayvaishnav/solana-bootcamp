@@ -13,7 +13,7 @@ const user = await getKeypairFromFile();
 
 await airdropIfRequired(connection, user.publicKey, 1 * LAMPORTS_PER_SOL, 0.5 * LAMPORTS_PER_SOL);
 
-console.log("Loaded user ", user.publicKey);
+console.log("Loaded user ", user.publicKey.toBase58());
 
 const umi = createUmi(connection.rpcEndpoint);
 umi.use(mplTokenMetadata());
@@ -28,17 +28,17 @@ const collectionMint = generateSigner(umi);
 
 console.log("collection mint : ", collectionMint);
 
-// const transaction = await createNft(umi, {
-//   mint: collectionMint,
-//   name: "sujiko2",
-//   symbol: "SUJ",
-//   uri: "https://avatars.githubusercontent.com/u/123557766?v=4",
-//   sellerFeeBasisPoints: percentAmount(0),
-//   isCollection: true,
-// });
+const transaction = await createNft(umi, {
+  mint: collectionMint,
+  name: "sujiko2",
+  symbol: "SUJ",
+  uri: "https://avatars.githubusercontent.com/u/123557766?v=4",
+  sellerFeeBasisPoints: percentAmount(0),
+  isCollection: true,
+});
 
-// await transaction.sendAndConfirm(umi);
+await transaction.sendAndConfirm(umi);
 
-// const createdCollectionNft = await fetchDigitalAsset(umi, collectionMint.publicKey);
+const createdCollectionNft = await fetchDigitalAsset(umi, collectionMint.publicKey);
 
-// console.log(`Created collection ✅! Addres is ${getExplorerLink("address", createdCollectionNft.mint.publicKey, "devnet")}`);
+console.log(`Created collection ✅! Addres is ${getExplorerLink("address", createdCollectionNft.mint.publicKey, "devnet")}`);
