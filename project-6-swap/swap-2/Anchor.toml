@@ -1,4 +1,7 @@
 [toolchain]
+channel = "stable"
+components = ["rustc", "cargo"]
+rust-version = "1.79.0"
 
 [features]
 resolution = true
