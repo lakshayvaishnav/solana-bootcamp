@@ -10,6 +10,15 @@ pub mod vesting {
     use super::*;
 
     pub fn create_vesting_account(ctx: Context<CreateVestingAccount>, company_name: String) -> Result<()> {
+        // we are modifying the account so we are dereferencing it...
+        *ctx.accounts.vesting_account = VestingAccount {
+            company_name: company_name,
+            owner: ctx.accounts.signer.key(),
+            mint: ctx.accounts.mint.key(),
+            treasury_token_account: ctx.accounts.treasury_token_account.key(),
+            treasury_bump:ctx.bumps.treasury_token_account,
+            bump:ctx.bumps.vesting_account
+        };
         Ok(())
     }
 }
