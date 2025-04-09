@@ -1,7 +1,12 @@
 import * as anchor from "@coral-xyz/anchor";
 
 import { Keypair, PublicKey } from "@solana/web3.js";
-import { BanksClient, ProgramTestContext, startAnchor } from "solana-bankrun";
+import {
+  BanksClient,
+  Clock,
+  ProgramTestContext,
+  startAnchor,
+} from "solana-bankrun";
 import { BN, Program } from "@coral-xyz/anchor";
 import IDL from "../target/idl/vesting.json";
 import { SYSTEM_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/native/system";
@@ -128,5 +133,25 @@ describe("vesting smart contract tests", () => {
 
     console.log("create employee account Tx : ", tx2);
     console.log("employee account : ", employeeAccount.toBase58());
+  });
+
+  it("should claim tokens : ", async () => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const currentClock = await banksClient.getClock();
+    context.setClock(
+      new Clock(
+        currentClock.slot,
+        currentClock.epochStartTimestamp,
+        currentClock.epoch,
+        currentClock.leaderScheduleEpoch,
+        BigInt(1000)
+      )
+    );
+    const tx3 = await program2.methods
+      .claimTokens(companyName)
+      .accounts({ tokenProgram: TOKEN_PROGRAM_ID })
+      .rpc({ commitment: "confirmed" });
+
+    console.log("Claim token tx : ", tx3);
   });
 });
