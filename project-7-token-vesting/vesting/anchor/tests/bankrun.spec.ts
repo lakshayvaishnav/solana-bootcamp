@@ -116,4 +116,17 @@ describe("vesting smart contract tests", () => {
     );
     console.log("Mint treasury token account : ", mintTx);
   });
+
+  it("should create employee vesting account : ", async () => {
+    const tx2 = await program.methods
+      .createEmployeeAccount(new BN(0), new BN(100), new BN(100), new BN(0))
+      .accounts({
+        beneficiary: beneficiary.publicKey,
+        vestingAccount: vestingAccountKey,
+      })
+      .rpc({ commitment: "confirmed", skipPreflight: true });
+
+    console.log("create employee account Tx : ", tx2);
+    console.log("employee account : ", employeeAccount.toBase58());
+  });
 });
