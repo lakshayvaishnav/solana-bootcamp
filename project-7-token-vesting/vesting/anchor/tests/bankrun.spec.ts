@@ -7,9 +7,9 @@ import IDL from "../target/idl/vesting.json";
 import { SYSTEM_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/native/system";
 import { BankrunProvider } from "anchor-bankrun";
 import { Vesting } from "@project/anchor";
-import {  TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 // @ts-ignore
-import {createMint} from "spl-token-bankrun"
+import { createMint, mintTo } from "spl-token-bankrun";
 import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
 
 describe("vesting smart contract tests", () => {
@@ -102,5 +102,18 @@ describe("vesting smart contract tests", () => {
     );
     console.log("vesting account data : ", vestingAccountData);
     console.log("create vesting account : ", tx);
+  });
+
+  it("should fund the treasury token account", async () => {
+    const amount = 10_000 * 10 ** 9;
+    const mintTx = await mintTo(
+      banksClient,
+      employer,
+      mint,
+      treasuryTokenAccount,
+      employer,
+      amount
+    );
+    console.log("Mint treasury token account : ", mintTx);
   });
 });
