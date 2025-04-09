@@ -1,8 +1,10 @@
 #![allow(clippy::result_large_err)]
 
 use anchor_lang::prelude::*;
-use anchor_spl::{associated_token::AssociatedToken, 
-                token_interface::{self,Mint, TokenAccount, TokenInterface, TransferChecked}};
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    token_interface::{self, Mint, TokenAccount, TokenInterface, TransferChecked},
+};
 declare_id!("coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF");
 
 #[program]
@@ -13,40 +15,45 @@ pub mod vesting {
     pub fn create_vesting_account(ctx: Context<CreateVestingAccount>, company_name: String) -> Result<()> {
         // we are modifying the account so we are dereferencing it...
         /*
-            Dereferencing is used when you need to manipulate the actual data stored on 
-            the reference location, less common, on the higher level
-            mostly when initializing the accounts or resetting the account data. 
-         */
+           Dereferencing is used when you need to manipulate the actual data stored on
+           the reference location, less common, on the higher level
+           mostly when initializing the accounts or resetting the account data.
+        */
         *ctx.accounts.vesting_account = VestingAccount {
             company_name: company_name,
             owner: ctx.accounts.signer.key(),
             mint: ctx.accounts.mint.key(),
             treasury_token_account: ctx.accounts.treasury_token_account.key(),
-            treasury_bump:ctx.bumps.treasury_token_account,
-            bump:ctx.bumps.vesting_account
+            treasury_bump: ctx.bumps.treasury_token_account,
+            bump: ctx.bumps.vesting_account,
         };
         Ok(())
     }
 
-    pub fn create_employee_account(ctx:Context<CreateEmployeeAccount>, start_time:i64, end_time:i64, total_amount:u64, cliff_time:i64) -> Result<()> {
+    pub fn create_employee_account(
+        ctx: Context<CreateEmployeeAccount>,
+        start_time: i64,
+        end_time: i64,
+        total_amount: u64,
+        cliff_time: i64,
+    ) -> Result<()> {
         *ctx.accounts.employee_account = EmployeeAccount {
             beneficiary: ctx.accounts.beneficiary.key(),
             start_time: start_time,
             end_time: end_time,
             total_amount: total_amount,
             total_withdrawn: 0,
-            cliff_time:cliff_time,
+            cliff_time: cliff_time,
             vesting_account: ctx.accounts.vesting_account.key(),
-            bump: ctx.bumps.employee_account
+            bump: ctx.bumps.employee_account,
         };
         Ok(())
     }
 
     pub fn claim_tokens(ctx: Context<ClaimTokens>, _company_name: String) -> Result<()> {
-
         /*
         mutable reference -  allows you to pass employee account to other functions
-        while still having the ability to modify the original data. 
+        while still having the ability to modify the original data.
         usefule when using multiple operations.
          */
         let employee_account = &mut ctx.accounts.employee_account;
@@ -58,51 +65,49 @@ pub mod vesting {
             return Err(ErrorCode::ClaimNotAvailableYet.into());
         }
 
-            let time_since_start = now.saturating_sub(employee_account.start_time);
-            let total_vesting_time = employee_account.end_time.saturating_sub(employee_account.start_time);
-            
-            if total_vesting_time == 0 {
-                return Err(ErrorCode::InvalidVestingPeriod.into());
+        let time_since_start = now.saturating_sub(employee_account.start_time);
+        let total_vesting_time = employee_account.end_time.saturating_sub(employee_account.start_time);
+
+        if total_vesting_time == 0 {
+            return Err(ErrorCode::InvalidVestingPeriod.into());
+        }
+
+        let vested_amount = if now >= employee_account.end_time {
+            employee_account.total_amount
+        } else {
+            match employee_account.total_amount.checked_mul(time_since_start as u64) {
+                Some(product) => product / total_vesting_time as u64,
+                None => return Err(ErrorCode::CalculationOverflow.into()),
             }
+        };
 
-            let vested_amount = if now >= employee_account.end_time {
-                 employee_account.total_amount
-            } else {
-                match employee_account.total_amount.checked_mul(time_since_start as u64) {
-                    Some(product) => product / total_vesting_time as u64,
-                    None => {
-                        return Err(ErrorCode::CalculationOverflow.into())
-                    }
-                }
-            };
+        let claimable_amount = vested_amount.saturating_sub(employee_account.total_withdrawn);
+        if claimable_amount == 0 {
+            return Err(ErrorCode::NothingToClaim.into());
+        }
 
-            let claimable_amount = vested_amount.saturating_sub(employee_account.total_withdrawn);
-            if claimable_amount == 0 {
-                return Err(ErrorCode::NothingToClaim.into())
-            }
+        let transfer_cpi_accounts = TransferChecked {
+            from: ctx.accounts.treasury_token_account.to_account_info(),
+            mint: ctx.accounts.mint.to_account_info(),
+            to: ctx.accounts.employee_token_account.to_account_info(),
+            authority: ctx.accounts.treasury_token_account.to_account_info(),
+        };
 
-            let transfer_cpi_accounts= TransferChecked {
-                from: ctx.accounts.treasury_token_account.to_account_info(),
-                mint:ctx.accounts.mint.to_account_info(),
-                to: ctx.accounts.employee_token_account.to_account_info(),
-                authority:ctx.accounts.treasury_token_account.to_account_info()
-            };
+        let cpi_program = ctx.accounts.token_program.to_account_info();
 
-            let cpi_program = ctx.accounts.token_program.to_account_info();
+        let signer_seeds: &[&[&[u8]]] = &[&[
+            b"vesting_treasury",
+            ctx.accounts.vesting_account.company_name.as_ref(),
+            &[ctx.accounts.vesting_account.treasury_bump],
+        ]];
 
-            let signer_seeds : &[&[&[u8]]] = &[
-                &[b"vesting_treasury",
-                ctx.accounts.vesting_account.company_name.as_ref(),
-                &[ctx.accounts.vesting_account.treasury_bump]]
-            ];
+        let cpi_context = CpiContext::new(cpi_program, transfer_cpi_accounts).with_signer(signer_seeds);
 
-            let cpi_context = CpiContext::new(cpi_program, transfer_cpi_accounts).with_signer(signer_seeds);
+        let decimals = ctx.accounts.mint.decimals;
 
-            let decimals = ctx.accounts.mint.decimals;
+        token_interface::transfer_checked(cpi_context, claimable_amount, decimals)?;
 
-            token_interface::transfer_checked(cpi_context, claimable_amount, decimals)?;
-
-            employee_account.total_withdrawn += claimable_amount;
+        employee_account.total_withdrawn += claimable_amount;
         Ok(())
     }
 }
@@ -120,7 +125,7 @@ pub struct CreateVestingAccount<'info> {
               bump)]
     pub vesting_account: Account<'info, VestingAccount>,
 
-    pub mint : InterfaceAccount<'info, Mint>,
+    pub mint: InterfaceAccount<'info, Mint>,
 
     #[account(init , 
         token::mint = mint,
@@ -132,19 +137,19 @@ pub struct CreateVestingAccount<'info> {
     pub treasury_token_account: InterfaceAccount<'info, TokenAccount>,
 
     pub system_program: Program<'info, System>,
-    pub token_program : Interface<'info, TokenInterface>
+    pub token_program: Interface<'info, TokenInterface>,
 }
 
 #[derive(Accounts)]
 pub struct CreateEmployeeAccount<'info> {
     #[account(mut)]
     pub owner: Signer<'info>,
-    pub beneficiary : SystemAccount<'info>,
+    pub beneficiary: SystemAccount<'info>,
 
     #[account(
        has_one = owner 
     )]
-    pub vesting_account : Account<'info, VestingAccount>,
+    pub vesting_account: Account<'info, VestingAccount>,
 
     #[account(
         init,
@@ -153,10 +158,9 @@ pub struct CreateEmployeeAccount<'info> {
         seeds = [b"employee_vesting", beneficiary.key().as_ref(), vesting_account.key().as_ref()],
         bump,  
     )]
-    pub employee_account : Account<'info, EmployeeAccount>,
-    
-    pub system_program : Program<'info, System>
-    
+    pub employee_account: Account<'info, EmployeeAccount>,
+
+    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
@@ -181,12 +185,12 @@ pub struct ClaimTokens<'info> {
         has_one = treasury_token_account,
         has_one = mint,
     )]
-    pub vesting_account : Account<'info,VestingAccount >,
+    pub vesting_account: Account<'info, VestingAccount>,
 
-    pub mint : InterfaceAccount<'info, Mint>, 
+    pub mint: InterfaceAccount<'info, Mint>,
 
     #[account(mut)]
-    pub treasury_token_account : InterfaceAccount<'info, TokenAccount>,
+    pub treasury_token_account: InterfaceAccount<'info, TokenAccount>,
 
     #[account(
         init_if_needed,
@@ -195,12 +199,11 @@ pub struct ClaimTokens<'info> {
         associated_token::authority = beneficiary,
         associated_token::token_program = token_program
     )]
-    pub employee_token_account : InterfaceAccount<'info, TokenAccount>,
-    pub token_program : Interface<'info, TokenInterface>,
-    pub associated_token_program : Program<'info, AssociatedToken>,
-    pub system_program : Program<'info, System>
-
- }
+    pub employee_token_account: InterfaceAccount<'info, TokenAccount>,
+    pub token_program: Interface<'info, TokenInterface>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
+    pub system_program: Program<'info, System>,
+}
 
 #[account]
 #[derive(InitSpace)]
@@ -214,18 +217,17 @@ pub struct VestingAccount {
     pub bump: u8,
 }
 
-
 #[account]
 #[derive(InitSpace)]
 pub struct EmployeeAccount {
-    pub beneficiary : Pubkey,
+    pub beneficiary: Pubkey,
     pub start_time: i64,
     pub end_time: i64,
     pub cliff_time: i64,
     pub vesting_account: Pubkey,
     pub total_amount: u64,
     pub total_withdrawn: u64,
-    pub bump: u8
+    pub bump: u8,
 }
 
 #[error_code]
@@ -237,5 +239,5 @@ pub enum ErrorCode {
     #[msg("calculation overflow")]
     CalculationOverflow,
     #[msg("nothing to claim")]
-    NothingToClaim
+    NothingToClaim,
 }
