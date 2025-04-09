@@ -1,17 +1,32 @@
 import * as anchor from "@coral-xyz/anchor";
 
 import { Keypair, PublicKey } from "@solana/web3.js";
-import { ProgramTestContext, startAnchor } from "solana-bankrun";
-
+import { BanksClient, ProgramTestContext, startAnchor } from "solana-bankrun";
+import { BN, Program } from "@coral-xyz/anchor";
 import IDL from "../target/idl/vesting.json";
-import { program, SYSTEM_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/native/system";
+import { SYSTEM_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/native/system";
 import { BankrunProvider } from "anchor-bankrun";
 import { Vesting } from "@project/anchor";
+import {  TOKEN_PROGRAM_ID } from "@solana/spl-token";
+// @ts-ignore
+import {createMint} from "spl-token-bankrun"
+import NodeWallet from "@coral-xyz/anchor/dist/cjs/nodewallet";
 
 describe("vesting smart contract tests", () => {
+  const companyName = "company";
   let beneficiary: Keypair;
   let context: ProgramTestContext;
-  let provider : BankrunProvider
+  let provider: BankrunProvider;
+  let program: Program<Vesting>;
+  let banksClient: BanksClient;
+  let employer: Keypair;
+  let mint: PublicKey;
+  let beneficiaryProvider: BankrunProvider;
+  let program2: Program<Vesting>;
+  let vestingAccountKey: PublicKey;
+  let treasuryTokenAccount: PublicKey;
+  let employeeAccount: PublicKey;
+
   beforeAll(async () => {
     beneficiary = new anchor.web3.Keypair();
 
@@ -26,7 +41,7 @@ describe("vesting smart contract tests", () => {
           address: beneficiary.publicKey,
           info: {
             lamports: 1_000_000_000,
-            data: Buffer.alloc(0),
+            data: new Uint8Array(),
             owner: SYSTEM_PROGRAM_ID,
             executable: false,
           },
@@ -34,9 +49,58 @@ describe("vesting smart contract tests", () => {
       ]
     );
 
-    provider = new BankrunProvider(context)
-    anchor.setProvider(provider)
+    provider = new BankrunProvider(context);
+    anchor.setProvider(provider);
 
-    program = new Program<Vesting>(IDLS as Vesting, provider)
+    program = new Program<Vesting>(IDL as Vesting, provider);
+
+    banksClient = context.banksClient;
+    employer = provider.wallet.payer;
+
+    // create a new mint
+    mint = await createMint(banksClient, employer, employer.publicKey, null, 2);
+
+    // generate a new keypair for the beneficiary
+    beneficiaryProvider = new BankrunProvider(context);
+    beneficiaryProvider.wallet = new NodeWallet(beneficiary);
+
+    program2 = new Program<Vesting>(IDL as Vesting, beneficiaryProvider);
+
+    [vestingAccountKey] = PublicKey.findProgramAddressSync(
+      [Buffer.from(companyName)],
+      program.programId
+    );
+
+    [treasuryTokenAccount] = PublicKey.findProgramAddressSync(
+      [Buffer.from("vesting_treasury"), Buffer.from(companyName)],
+      program.programId
+    );
+
+    [employeeAccount] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("employee_vesting"),
+        beneficiary.publicKey.toBuffer(),
+        vestingAccountKey.toBuffer(),
+      ],
+      program.programId
+    );
+  });
+
+  it("should create a vesting account ", async () => {
+    const tx = await program.methods
+      .createVestingAccount(companyName)
+      .accounts({
+        signer: employer.publicKey,
+        mint: mint,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .rpc({ commitment: "confirmed" });
+
+    const vestingAccountData = await program.account.vestingAccount.fetch(
+      vestingAccountKey,
+      "confirmed"
+    );
+    console.log("vesting account data : ", vestingAccountData);
+    console.log("create vesting account : ", tx);
   });
 });
