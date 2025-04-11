@@ -10,6 +10,20 @@ import { useCluster } from "../cluster/cluster-data-access";
 import { useAnchorProvider } from "../solana/solana-provider";
 import { useTransactionToast } from "../ui/ui-layout";
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import BN from "bn.js";
+
+interface CreateVestingArgs {
+  companyName: string;
+  // we are not deriving mint account any where so we need to pass it
+  mint: string;
+}
+
+interface CreateEmployeeArgs {
+  startTime: number;
+  endTime: number;
+  totalAmount: number;
+  cliffTime: number;
+}
 
 export function useVestingProgram() {
   const { connection } = useConnection();
@@ -18,12 +32,6 @@ export function useVestingProgram() {
   const provider = useAnchorProvider();
   const programId = useMemo(() => getVestingProgramId(cluster.network as Cluster), [cluster]);
   const program = useMemo(() => getVestingProgram(provider, programId), [provider, programId]);
-
-  interface createVestingArgs {
-    companyName: string;
-    // we are not deriving mint account any where so we need to pass it
-    mint: string;
-  }
 
   const accounts = useQuery({
     queryKey: ["vesting", "all", { cluster }],
@@ -35,7 +43,7 @@ export function useVestingProgram() {
     queryFn: () => connection.getParsedAccountInfo(programId),
   });
 
-  const createVestingAccount = useMutation<string, Error, createVestingArgs>({
+  const createVestingAccount = useMutation<string, Error, CreateVestingArgs>({
     mutationKey: ["create-vesting-account", { cluster }],
     mutationFn: ({ companyName, mint }) =>
       program.methods
@@ -54,7 +62,7 @@ export function useVestingProgram() {
     programId,
     accounts,
     getProgramAccount,
-    createVestingAccount
+    createVestingAccount,
   };
 }
 
@@ -63,5 +71,23 @@ export function useVestingProgramAccount({ account }: { account: PublicKey }) {
   const transactionToast = useTransactionToast();
   const { program, accounts } = useVestingProgram();
 
-  return {};
+  const accountQuery = useQuery({
+    queryKey: ["vesting", "fetch"],
+    queryFn: () => program.account.vestingAccount.fetch(account),
+  });
+
+  const createEmployeeVesting = useMutation<string, Error, CreateEmployeeArgs>({
+    mutationKey: ["vesting", "close", { cluster, account }],
+    mutationFn: ({ startTime, endTime, cliffTime, totalAmount }) =>
+      program.methods.createEmployeeAccount(new BN(startTime), new BN(endTime), new BN(totalAmount), new BN(cliffTime)).rpc(),
+    onSuccess: (tx) => {
+      transactionToast(tx);
+      return accounts.refetch();
+    },
+  });
+
+  return {
+    accountQuery,
+    createEmployeeVesting,
+  };
 }
