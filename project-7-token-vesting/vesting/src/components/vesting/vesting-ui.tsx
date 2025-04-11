@@ -1,40 +1,55 @@
-'use client'
+"use client";
 
-import { Keypair, PublicKey } from '@solana/web3.js'
-import { useMemo } from 'react'
-import { ellipsify } from '../ui/ui-layout'
-import { ExplorerLink } from '../cluster/cluster-ui'
-import { useVestingProgram, useVestingProgramAccount } from './vesting-data-access'
+import { Keypair, PublicKey } from "@solana/web3.js";
+import { useMemo, useState } from "react";
+import { ellipsify } from "../ui/ui-layout";
+import { ExplorerLink } from "../cluster/cluster-ui";
+import { useVestingProgram, useVestingProgramAccount } from "./vesting-data-access";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 export function VestingCreate() {
-  const { initialize } = useVestingProgram()
+  const { createVestingAccount } = useVestingProgram();
+  const [company, setcompany] = useState("");
+  const { publicKey } = useWallet();
+  const [mint, setmint] = useState("");
+  const isFormValid = company.length > 0;
+
+  const handleSubmit = () => {
+    if (publicKey && isFormValid) {
+      createVestingAccount.mutateAsync({ companyName: company, mint: mint });
+    }
+  };
+
+  if (!publicKey) {
+    return <p>connect to your wallet</p>;
+  }
 
   return (
-    <button
-      className="btn btn-xs lg:btn-md btn-primary"
-      onClick={() => initialize.mutateAsync(Keypair.generate())}
-      disabled={initialize.isPending}
-    >
-      Create {initialize.isPending && '...'}
-    </button>
-  )
+    <div>
+      <input type="text" onChange={(e) => setcompany(e.target.value)} placeholder="company name" />
+      <input type="text" onChange={(e) => setmint(e.target.value)} placeholder="token mint address" />
+      <button onClick={handleSubmit} disabled={createVestingAccount.isPending}>
+        create new vesting account {createVestingAccount.isPending || "....."}{" "}
+      </button>
+    </div>
+  );
 }
 
 export function VestingList() {
-  const { accounts, getProgramAccount } = useVestingProgram()
+  const { accounts, getProgramAccount } = useVestingProgram();
 
   if (getProgramAccount.isLoading) {
-    return <span className="loading loading-spinner loading-lg"></span>
+    return <span className="loading loading-spinner loading-lg"></span>;
   }
   if (!getProgramAccount.data?.value) {
     return (
       <div className="alert alert-info flex justify-center">
         <span>Program account not found. Make sure you have deployed the program and are on the correct cluster.</span>
       </div>
-    )
+    );
   }
   return (
-    <div className={'space-y-6'}>
+    <div className={"space-y-6"}>
       {accounts.isLoading ? (
         <span className="loading loading-spinner loading-lg"></span>
       ) : accounts.data?.length ? (
@@ -45,20 +60,24 @@ export function VestingList() {
         </div>
       ) : (
         <div className="text-center">
-          <h2 className={'text-2xl'}>No accounts</h2>
+          <h2 className={"text-2xl"}>No accounts</h2>
           No accounts found. Create one above to get started.
         </div>
       )}
     </div>
-  )
+  );
 }
 
 function VestingCard({ account }: { account: PublicKey }) {
-  const { accountQuery, incrementMutation, setMutation, decrementMutation, closeMutation } = useVestingProgramAccount({
-    account,
-  })
+  const { accountQuery, createEmployeeVesting } = useVestingProgramAccount({ account });
 
-  const count = useMemo(() => accountQuery.data?.count ?? 0, [accountQuery.data?.count])
+  const [startTime, setstartTime] = useState(0);
+  const [endTime, setendTime] = useState(0);
+  const [cliffTime, setcliffTime] = useState(0);
+  const [totalAmount, settotalAmount] = useState(0);
+  const [beneficiary, setbeneficiary] = useState("");
+
+  const companyName = useMemo(() => accountQuery.data?.companyName ?? 0, [accountQuery.data?.companyName]);
 
   return accountQuery.isLoading ? (
     <span className="loading loading-spinner loading-lg"></span>
@@ -67,56 +86,57 @@ function VestingCard({ account }: { account: PublicKey }) {
       <div className="card-body items-center text-center">
         <div className="space-y-6">
           <h2 className="card-title justify-center text-3xl cursor-pointer" onClick={() => accountQuery.refetch()}>
-            {count}
+            {companyName}
           </h2>
           <div className="card-actions justify-around">
+            <input
+              type="text"
+              placeholder="start time"
+              value={startTime || ""}
+              onChange={(e) => setstartTime(parseInt(e.target.value))}
+            />
+            <input
+              type="text"
+              placeholder="end time"
+              value={endTime || ""}
+              onChange={(e) => setendTime(parseInt(e.target.value))}
+            />
+            <input
+              type="text"
+              placeholder="cliff time"
+              value={cliffTime || ""}
+              onChange={(e) => setcliffTime(parseInt(e.target.value))}
+            />
+            <input
+              type="text"
+              placeholder="time allocation"
+              value={totalAmount || ""}
+              onChange={(e) => settotalAmount(parseInt(e.target.value))}
+            />
+
+            <input
+              type="text"
+              placeholder="beneficiary wallet address"
+              value={beneficiary || ""}
+              onChange={(e) => setbeneficiary(e.target.value)}
+            />
             <button
-              className="btn btn-xs lg:btn-md btn-outline"
-              onClick={() => incrementMutation.mutateAsync()}
-              disabled={incrementMutation.isPending}
-            >
-              Increment
-            </button>
-            <button
-              className="btn btn-xs lg:btn-md btn-outline"
               onClick={() => {
-                const value = window.prompt('Set value to:', count.toString() ?? '0')
-                if (!value || parseInt(value) === count || isNaN(parseInt(value))) {
-                  return
-                }
-                return setMutation.mutateAsync(parseInt(value))
+                createEmployeeVesting.mutateAsync({
+                  startTime,
+                  endTime,
+                  totalAmount,
+                  cliffTime,
+                  beneficiary,
+                });
               }}
-              disabled={setMutation.isPending}
+              disabled={createEmployeeVesting.isPending}
             >
-              Set
-            </button>
-            <button
-              className="btn btn-xs lg:btn-md btn-outline"
-              onClick={() => decrementMutation.mutateAsync()}
-              disabled={decrementMutation.isPending}
-            >
-              Decrement
-            </button>
-          </div>
-          <div className="text-center space-y-4">
-            <p>
-              <ExplorerLink path={`account/${account}`} label={ellipsify(account.toString())} />
-            </p>
-            <button
-              className="btn btn-xs btn-secondary btn-outline"
-              onClick={() => {
-                if (!window.confirm('Are you sure you want to close this account?')) {
-                  return
-                }
-                return closeMutation.mutateAsync()
-              }}
-              disabled={closeMutation.isPending}
-            >
-              Close
+              create employee vesting account
             </button>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

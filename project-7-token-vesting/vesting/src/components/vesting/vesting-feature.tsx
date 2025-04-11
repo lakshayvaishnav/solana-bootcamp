@@ -1,20 +1,20 @@
-'use client'
+"use client";
 
-import { useWallet } from '@solana/wallet-adapter-react'
-import { WalletButton } from '../solana/solana-provider'
-import { AppHero, ellipsify } from '../ui/ui-layout'
-import { ExplorerLink } from '../cluster/cluster-ui'
-import { useVestingProgram } from './vesting-data-access'
-import { VestingCreate, VestingList } from './vesting-ui'
+import { useWallet } from "@solana/wallet-adapter-react";
+import { WalletButton } from "../solana/solana-provider";
+import { AppHero, ellipsify } from "../ui/ui-layout";
+import { ExplorerLink } from "../cluster/cluster-ui";
+import { useVestingProgram } from "./vesting-data-access";
+import { VestingCreate, VestingList } from "./vesting-ui";
 
 export default function VestingFeature() {
-  const { publicKey } = useWallet()
-  const { programId } = useVestingProgram()
+  const { publicKey } = useWallet();
+  const { programId } = useVestingProgram();
 
   return publicKey ? (
     <div>
       <AppHero
-        title="Vesting"
+        title="Token Vesting"
         subtitle={
           'Create a new account by clicking the "Create" button. The state of a account is stored on-chain and can be manipulated by calling the program\'s methods (increment, decrement, set, and close).'
         }
@@ -34,5 +34,5 @@ export default function VestingFeature() {
         </div>
       </div>
     </div>
-  )
+  );
 }

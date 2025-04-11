@@ -23,6 +23,7 @@ interface CreateEmployeeArgs {
   endTime: number;
   totalAmount: number;
   cliffTime: number;
+  beneficiary: string;
 }
 
 export function useVestingProgram() {
@@ -78,8 +79,14 @@ export function useVestingProgramAccount({ account }: { account: PublicKey }) {
 
   const createEmployeeVesting = useMutation<string, Error, CreateEmployeeArgs>({
     mutationKey: ["vesting", "close", { cluster, account }],
-    mutationFn: ({ startTime, endTime, cliffTime, totalAmount }) =>
-      program.methods.createEmployeeAccount(new BN(startTime), new BN(endTime), new BN(totalAmount), new BN(cliffTime)).rpc(),
+    mutationFn: ({ startTime, endTime, cliffTime, totalAmount, beneficiary }) =>
+      program.methods
+        .createEmployeeAccount(new BN(startTime), new BN(endTime), new BN(totalAmount), new BN(cliffTime))
+        .accounts({
+          beneficiary: new PublicKey(beneficiary),
+          vestingAccount: account,
+        })
+        .rpc(),
     onSuccess: (tx) => {
       transactionToast(tx);
       return accounts.refetch();
