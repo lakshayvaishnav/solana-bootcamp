@@ -73,7 +73,7 @@ export function useVestingProgramAccount({ account }: { account: PublicKey }) {
   const { program, accounts } = useVestingProgram();
 
   const accountQuery = useQuery({
-    queryKey: ["vesting", "fetch"],
+    queryKey: ["vesting", account.toString()],
     queryFn: () => program.account.vestingAccount.fetch(account),
   });
 

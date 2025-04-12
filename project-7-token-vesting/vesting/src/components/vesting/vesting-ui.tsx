@@ -1,11 +1,13 @@
 "use client";
 
-import { Keypair, PublicKey } from "@solana/web3.js";
+import { Cluster, Keypair, PublicKey } from "@solana/web3.js";
 import { useMemo, useState } from "react";
 import { ellipsify } from "../ui/ui-layout";
 import { ExplorerLink } from "../cluster/cluster-ui";
 import { useVestingProgram, useVestingProgramAccount } from "./vesting-data-access";
 import { useWallet } from "@solana/wallet-adapter-react";
+import { useCluster } from "../cluster/cluster-data-access";
+import cluster from "cluster";
 
 export function VestingCreate() {
   const { createVestingAccount } = useVestingProgram();
@@ -26,9 +28,23 @@ export function VestingCreate() {
 
   return (
     <div>
-      <input type="text" onChange={(e) => setcompany(e.target.value)} placeholder="company name" />
-      <input type="text" onChange={(e) => setmint(e.target.value)} placeholder="token mint address" />
-      <button onClick={handleSubmit} disabled={createVestingAccount.isPending}>
+      <input
+        className="input input-bordered w-full max-w-xs"
+        type="text"
+        onChange={(e) => setcompany(e.target.value)}
+        placeholder="company name"
+      />
+      <input
+        className="input input-bordered w-full max-w-xs"
+        type="text"
+        onChange={(e) => setmint(e.target.value)}
+        placeholder="token mint address"
+      />
+      <button
+        onClick={handleSubmit}
+        disabled={createVestingAccount.isPending}
+        className="btn btn-xs lg:btn-md btn-outline"
+      >
         create new vesting account {createVestingAccount.isPending || "....."}{" "}
       </button>
     </div>
@@ -36,6 +52,8 @@ export function VestingCreate() {
 }
 
 export function VestingList() {
+  const { cluster } = useCluster();
+
   const { accounts, getProgramAccount } = useVestingProgram();
 
   if (getProgramAccount.isLoading) {
@@ -62,6 +80,7 @@ export function VestingList() {
         <div className="text-center">
           <h2 className={"text-2xl"}>No accounts</h2>
           No accounts found. Create one above to get started.
+          <h1> hiii {cluster.network as Cluster}</h1>
         </div>
       )}
     </div>
@@ -77,7 +96,7 @@ function VestingCard({ account }: { account: PublicKey }) {
   const [totalAmount, settotalAmount] = useState(0);
   const [beneficiary, setbeneficiary] = useState("");
 
-  const companyName = useMemo(() => accountQuery.data?.companyName ?? 0, [accountQuery.data?.companyName]);
+  const companyName = accountQuery.data?.companyName ?? "";
 
   return accountQuery.isLoading ? (
     <span className="loading loading-spinner loading-lg"></span>
@@ -91,6 +110,7 @@ function VestingCard({ account }: { account: PublicKey }) {
           <div className="card-actions justify-around">
             <input
               type="text"
+              className="input input-bordered w-full max-w-xs"
               placeholder="start time"
               value={startTime || ""}
               onChange={(e) => setstartTime(parseInt(e.target.value))}
@@ -98,18 +118,21 @@ function VestingCard({ account }: { account: PublicKey }) {
             <input
               type="text"
               placeholder="end time"
+              className="input input-bordered w-full max-w-xs"
               value={endTime || ""}
               onChange={(e) => setendTime(parseInt(e.target.value))}
             />
             <input
               type="text"
               placeholder="cliff time"
+              className="input input-bordered w-full max-w-xs"
               value={cliffTime || ""}
               onChange={(e) => setcliffTime(parseInt(e.target.value))}
             />
             <input
               type="text"
               placeholder="time allocation"
+              className="input input-bordered w-full max-w-xs"
               value={totalAmount || ""}
               onChange={(e) => settotalAmount(parseInt(e.target.value))}
             />
@@ -117,10 +140,12 @@ function VestingCard({ account }: { account: PublicKey }) {
             <input
               type="text"
               placeholder="beneficiary wallet address"
+              className="input input-bordered w-full max-w-xs"
               value={beneficiary || ""}
               onChange={(e) => setbeneficiary(e.target.value)}
             />
             <button
+              className="btn btn-xs lg:btn-md btn-outline"
               onClick={() => {
                 createEmployeeVesting.mutateAsync({
                   startTime,
