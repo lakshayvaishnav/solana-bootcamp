@@ -2,6 +2,11 @@
 #![allow(unexpected_cfgs)]
 
 use anchor_lang::prelude::*;
+use anchor_spl::{
+    associated_token::AssociatedToken,
+    metadata::Metadata,
+    token_interface::{Mint, TokenAccount, TokenInterface},
+};
 
 declare_id!("BrLPbsKw3m7SGe5WQbmoKs5w7qJtRhHXkDh2Cbt9N35Z");
 
@@ -33,6 +38,11 @@ pub mod tokenlottery {
         ctx.accounts.token_lottery.randomness_account = Pubkey::default();
         ctx.accounts.token_lottery.winner_chosen = false;
 
+        Ok(())
+    }
+
+    pub fn initialize_lottery(ctx: Context<InitalizeLottery>) -> Result<()> {
+        let signer_seeds : &[&[&[u8]]] = &[&[b"collection_mint".as_ref(), &[ctx.bumps.collection_mint]]]; 
         Ok(())
     }
 }
@@ -67,4 +77,50 @@ pub struct TokenLottery {
     pub ticket_price: u64,
     pub authority: Pubkey,
     pub randomness_account: Pubkey,
+}
+
+#[derive(Accounts)]
+pub struct InitalizeLottery<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+
+    #[account(
+        init,
+        payer = payer,
+        mint::decimals = 0,
+        mint::authority = payer,
+        mint::freeze_authority = payer,
+        seeds = [b"collection_mint".as_ref()],
+        bump
+    )]
+    pub collection_mint: InterfaceAccount<'info, Mint>,
+
+    #[account(
+        init,
+        payer = payer,
+        token::mint = collection_token_account,
+        token::authority = payer,
+        seeds = [b"collection_associated_token".as_ref()],
+        bump,
+    )]
+    pub collection_token_account: InterfaceAccount<'info, TokenAccount>,
+
+    #[account(mut, 
+    seeds = [b"metadata", 
+    token_metadata_program.key().as_ref(), 
+    collection_mint.key().as_ref(),
+    b"edition"], 
+    bump, 
+    seeds::program = token_metadata_program.key())]
+    /// CHECK: This account is checked by the metadata smart contract
+    pub metadata: UncheckedAccount<'info>,
+
+    #[account(mut)]
+    /// CHECK : This account is checked by the metadata smart contract
+    pub master_edition: UncheckedAccount<'info>, 
+
+    pub token_metadata_program: Program<'info, Metadata>,
+    pub associated_token_program: Program<'info, AssociatedToken>,
+    pub token_program: Interface<'info, TokenInterface>,
+    pub system_program: Program<'info, System>,
 }
