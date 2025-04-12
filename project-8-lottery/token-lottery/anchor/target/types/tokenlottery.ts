@@ -229,6 +229,10 @@ export type Tokenlottery = {
         {
           "name": "systemProgram",
           "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
         }
       ],
       "args": []
@@ -297,6 +301,13 @@ export type Tokenlottery = {
           }
         ]
       }
+    }
+  ],
+  "constants": [
+    {
+      "name": "name",
+      "type": "string",
+      "value": "\"TOKEN LOTTERY TICKET TICKET #\""
     }
   ]
 };

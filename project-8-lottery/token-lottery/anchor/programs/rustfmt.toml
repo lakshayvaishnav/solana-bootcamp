@@ -1,0 +1,8 @@
+# rustfmt.toml example
+max_width = 120          # Maximum line width; default is 100
+hard_tabs = false        # Use spaces instead of tabs; default is false
+tab_spaces = 4           # Number of spaces per tab; default is 4
+newline_style = "Unix"   # Line endings: "Unix", "Windows", or "Native"
+use_field_init_shorthand = true  # Use shorthand for field initialization
+reorder_imports = true   # Automatically reorder imports
+wrap_comments = true     # Wrap comments to fit within max_width
