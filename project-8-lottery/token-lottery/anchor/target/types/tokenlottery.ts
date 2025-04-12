@@ -5,108 +5,142 @@
  * IDL can be found at `target/idl/tokenlottery.json`.
  */
 export type Tokenlottery = {
-  address: 'coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF'
-  metadata: {
-    name: 'tokenlottery'
-    version: '0.1.0'
-    spec: '0.1.0'
-    description: 'Created with Anchor'
-  }
-  instructions: [
+  "address": "coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF",
+  "metadata": {
+    "name": "tokenlottery",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
     {
-      name: 'close'
-      discriminator: [98, 165, 201, 177, 108, 65, 206, 96]
-      accounts: [
+      "name": "initializeConfig",
+      "discriminator": [
+        208,
+        127,
+        21,
+        1,
+        194,
+        190,
+        196,
+        70
+      ],
+      "accounts": [
         {
-          name: 'payer'
-          writable: true
-          signer: true
+          "name": "payer",
+          "writable": true,
+          "signer": true
         },
         {
-          name: 'tokenlottery'
-          writable: true
+          "name": "tokenLottery",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110,
+                  95,
+                  108,
+                  111,
+                  116,
+                  116,
+                  101,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
         },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "start",
+          "type": "u64"
+        },
+        {
+          "name": "end",
+          "type": "u64"
+        },
+        {
+          "name": "price",
+          "type": "u64"
+        }
       ]
-      args: []
-    },
+    }
+  ],
+  "accounts": [
     {
-      name: 'decrement'
-      discriminator: [106, 227, 168, 59, 248, 27, 150, 101]
-      accounts: [
-        {
-          name: 'tokenlottery'
-          writable: true
-        },
+      "name": "tokenLottery",
+      "discriminator": [
+        219,
+        174,
+        104,
+        58,
+        76,
+        30,
+        61,
+        218
       ]
-      args: []
-    },
+    }
+  ],
+  "types": [
     {
-      name: 'increment'
-      discriminator: [11, 18, 104, 9, 104, 174, 59, 33]
-      accounts: [
-        {
-          name: 'tokenlottery'
-          writable: true
-        },
-      ]
-      args: []
-    },
-    {
-      name: 'initialize'
-      discriminator: [175, 175, 109, 31, 13, 152, 155, 237]
-      accounts: [
-        {
-          name: 'payer'
-          writable: true
-          signer: true
-        },
-        {
-          name: 'tokenlottery'
-          writable: true
-          signer: true
-        },
-        {
-          name: 'systemProgram'
-          address: '11111111111111111111111111111111'
-        },
-      ]
-      args: []
-    },
-    {
-      name: 'set'
-      discriminator: [198, 51, 53, 241, 116, 29, 126, 194]
-      accounts: [
-        {
-          name: 'tokenlottery'
-          writable: true
-        },
-      ]
-      args: [
-        {
-          name: 'value'
-          type: 'u8'
-        },
-      ]
-    },
-  ]
-  accounts: [
-    {
-      name: 'tokenlottery'
-      discriminator: [255, 176, 4, 245, 188, 253, 124, 25]
-    },
-  ]
-  types: [
-    {
-      name: 'tokenlottery'
-      type: {
-        kind: 'struct'
-        fields: [
+      "name": "tokenLottery",
+      "type": {
+        "kind": "struct",
+        "fields": [
           {
-            name: 'count'
-            type: 'u8'
+            "name": "bump",
+            "type": "u8"
           },
+          {
+            "name": "winner",
+            "type": "u64"
+          },
+          {
+            "name": "winnerChosen",
+            "type": "bool"
+          },
+          {
+            "name": "startTime",
+            "type": "u64"
+          },
+          {
+            "name": "endTime",
+            "type": "u64"
+          },
+          {
+            "name": "lotteryPotAmount",
+            "type": "u64"
+          },
+          {
+            "name": "totalTickets",
+            "type": "u64"
+          },
+          {
+            "name": "ticketPrice",
+            "type": "u64"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "randomnessAccount",
+            "type": "pubkey"
+          }
         ]
       }
-    },
+    }
   ]
-}
+};

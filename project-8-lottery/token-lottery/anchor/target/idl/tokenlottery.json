@@ -8,8 +8,17 @@
   },
   "instructions": [
     {
-      "name": "close",
-      "discriminator": [98, 165, 201, 177, 108, 65, 206, 96],
+      "name": "initialize_config",
+      "discriminator": [
+        208,
+        127,
+        21,
+        1,
+        194,
+        190,
+        196,
+        70
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -17,87 +26,112 @@
           "signer": true
         },
         {
-          "name": "tokenlottery",
-          "writable": true
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "decrement",
-      "discriminator": [106, 227, 168, 59, 248, 27, 150, 101],
-      "accounts": [
-        {
-          "name": "tokenlottery",
-          "writable": true
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "increment",
-      "discriminator": [11, 18, 104, 9, 104, 174, 59, 33],
-      "accounts": [
-        {
-          "name": "tokenlottery",
-          "writable": true
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "initialize",
-      "discriminator": [175, 175, 109, 31, 13, 152, 155, 237],
-      "accounts": [
-        {
-          "name": "payer",
+          "name": "token_lottery",
           "writable": true,
-          "signer": true
-        },
-        {
-          "name": "tokenlottery",
-          "writable": true,
-          "signer": true
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  111,
+                  107,
+                  101,
+                  110,
+                  95,
+                  108,
+                  111,
+                  116,
+                  116,
+                  101,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
         },
         {
           "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
-      "args": []
-    },
-    {
-      "name": "set",
-      "discriminator": [198, 51, 53, 241, 116, 29, 126, 194],
-      "accounts": [
-        {
-          "name": "tokenlottery",
-          "writable": true
-        }
-      ],
       "args": [
         {
-          "name": "value",
-          "type": "u8"
+          "name": "start",
+          "type": "u64"
+        },
+        {
+          "name": "end",
+          "type": "u64"
+        },
+        {
+          "name": "price",
+          "type": "u64"
         }
       ]
     }
   ],
   "accounts": [
     {
-      "name": "Tokenlottery",
-      "discriminator": [255, 176, 4, 245, 188, 253, 124, 25]
+      "name": "TokenLottery",
+      "discriminator": [
+        219,
+        174,
+        104,
+        58,
+        76,
+        30,
+        61,
+        218
+      ]
     }
   ],
   "types": [
     {
-      "name": "Tokenlottery",
+      "name": "TokenLottery",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "count",
+            "name": "bump",
             "type": "u8"
+          },
+          {
+            "name": "winner",
+            "type": "u64"
+          },
+          {
+            "name": "winner_chosen",
+            "type": "bool"
+          },
+          {
+            "name": "start_time",
+            "type": "u64"
+          },
+          {
+            "name": "end_time",
+            "type": "u64"
+          },
+          {
+            "name": "lottery_pot_amount",
+            "type": "u64"
+          },
+          {
+            "name": "total_tickets",
+            "type": "u64"
+          },
+          {
+            "name": "ticket_price",
+            "type": "u64"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "randomness_account",
+            "type": "pubkey"
           }
         ]
       }
