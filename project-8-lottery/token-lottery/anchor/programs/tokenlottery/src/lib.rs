@@ -3,7 +3,7 @@
 
 use anchor_lang::prelude::*;
 
-declare_id!("coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF");
+declare_id!("BrLPbsKw3m7SGe5WQbmoKs5w7qJtRhHXkDh2Cbt9N35Z");
 
 #[program]
 pub mod tokenlottery {

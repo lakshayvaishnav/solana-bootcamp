@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/tokenlottery.json`.
  */
 export type Tokenlottery = {
-  "address": "coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF",
+  "address": "BrLPbsKw3m7SGe5WQbmoKs5w7qJtRhHXkDh2Cbt9N35Z",
   "metadata": {
     "name": "tokenlottery",
     "version": "0.1.0",
