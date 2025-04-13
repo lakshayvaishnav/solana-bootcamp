@@ -29,5 +29,6 @@ pub struct CallUpdate<'info> {
     /// the on chain target program
     pub target_program: Program<'info, Target>,
 
+    #[account(mut)]
     pub data_account: Account<'info, DataAccount>,
 }
