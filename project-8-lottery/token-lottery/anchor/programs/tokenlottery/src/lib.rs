@@ -5,26 +5,24 @@ use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
     metadata::Metadata,
-    token_interface::{Mint, TokenAccount, TokenInterface},
+    token_interface::{mint_to, Mint, MintTo, TokenAccount, TokenInterface},
+};
+
+use anchor_spl::metadata::{
+    create_master_edition_v3, create_metadata_accounts_v3,
+    mpl_token_metadata::types::{CollectionDetails, Creator, DataV2},
+    sign_metadata, CreateMasterEditionV3, CreateMetadataAccountsV3, SignMetadata,
 };
 
 declare_id!("BrLPbsKw3m7SGe5WQbmoKs5w7qJtRhHXkDh2Cbt9N35Z");
 
 #[constant]
-pub const NAME: &str = "TOKEN LOTTERY TICKET TICKET #";
-pub const SYMBOL: &str = "TLT";
+pub const NAME: &str = "TOKEN LOTTERY TICKET  #";
+pub const SYMBOL: &str = "TICKET";
 pub const URI:&str = "https://imgs.search.brave.com/nodruDXW5zqheP1m3NtbdCARtS1u8F3w5n_GofIF65Q/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzA1LzEwLzU1Lzg3/LzM2MF9GXzUxMDU1/ODcwMV9pRXZ6TFo4/SVFVV1dsQ0wxWEto/Rlp0d0E0dE5PRHRj/MS5qcGc";
 
 #[program]
 pub mod tokenlottery {
-    use anchor_spl::{
-        metadata::{
-            create_master_edition_v3, create_metadata_accounts_v3,
-            mpl_token_metadata::types::{CollectionDetails, Creator, DataV2},
-            sign_metadata, CreateMasterEditionV3, CreateMetadataAccountsV3, SignMetadata,
-        },
-        token::{mint_to, MintTo},
-    };
 
     use super::*;
     /*
@@ -70,7 +68,7 @@ pub mod tokenlottery {
             1,
         )?;
 
-        msg!("Creating metadat account !");
+        msg!("Creating metadata account !");
         create_metadata_accounts_v3(
             CpiContext::new_with_signer(
                 ctx.accounts.token_metadata_program.to_account_info(),
@@ -134,6 +132,10 @@ pub mod tokenlottery {
             signer_seeds,
         ))?;
 
+        Ok(())
+    }
+
+    pub fn buy_tickets(ctx: Context<BuyTicket>) -> Result<()> {
         Ok(())
     }
 }
@@ -222,4 +224,48 @@ pub struct InitalizeLottery<'info> {
     pub system_program: Program<'info, System>,
 
     pub rent: Sysvar<'info, Rent>,
+}
+
+#[derive(Accounts)]
+pub struct BuyTicket<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+
+    #[account(mut,seeds = [b"token_lottery".as_ref()], bump)]
+    pub token_lottery: Account<'info, TokenLottery>,
+
+    #[account(init,
+            payer = payer,
+            seeds = [token_lottery.total_tickets.to_le_bytes().as_ref()],
+            bump,
+            mint::decimals = 0,
+            mint:: authority = collection_mint,
+            mint::freeze_authority = collection_mint,
+            mint::token_program = token_program
+        )]
+    pub ticket_mint: InterfaceAccount<'info, Mint>,
+
+    #[account(
+        mut,
+        seeds = [
+            b"metadata",
+            token_metadata_program.key().as_ref(),
+            ticket_mint.key().as_ref()
+        ],
+        bump,
+        seeds::program = token_metadata_program.key()
+    )]
+    /// CHECK : 
+    pub ticket_metadata : UncheckedAccount<'info>,
+
+    #[account(
+            mut,
+            seeds = [b"collection_mint".as_ref()],
+            bump,
+        )]
+    pub collection_mint: InterfaceAccount<'info, Mint>,
+
+    pub token_program: Interface<'info, TokenInterface>,
+
+    pub system_program: Program<'info, System>,
 }

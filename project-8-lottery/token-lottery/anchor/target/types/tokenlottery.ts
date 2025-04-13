@@ -307,7 +307,7 @@ export type Tokenlottery = {
     {
       "name": "name",
       "type": "string",
-      "value": "\"TOKEN LOTTERY TICKET TICKET #\""
+      "value": "\"TOKEN LOTTERY TICKET  #\""
     }
   ]
 };
