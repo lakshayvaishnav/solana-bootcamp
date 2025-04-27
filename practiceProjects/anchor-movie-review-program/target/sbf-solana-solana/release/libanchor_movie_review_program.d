@@ -1,0 +1,1 @@
+/home/lxsh/practiceAnchor/anchor-movie-review-program/target/sbf-solana-solana/release/libanchor_movie_review_program.rlib: /home/lxsh/practiceAnchor/anchor-movie-review-program/programs/anchor-movie-review-program/src/lib.rs
