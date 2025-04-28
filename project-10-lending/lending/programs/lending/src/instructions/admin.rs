@@ -31,9 +31,8 @@ pub struct InitBank<'info> {
     pub system_program: Program<'info, System>,
 }
 
-
 #[derive(Accounts)]
-pub struct InitUser <'info> {
+pub struct InitUser<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
@@ -44,6 +43,29 @@ pub struct InitUser <'info> {
         seeds = [signer.key().as_ref()],
         bump,
     )]
-    pub user_account : Account<'info,User>,
-    pub system_program : Program<'info, System>
+    pub user_account: Account<'info, User>,
+    pub system_program: Program<'info, System>,
+}
+
+pub fn process_init_bank(
+    ctx: Context<InitBank>,
+    liquidation_threshold: u64,
+    max_ltv: u64,
+) -> Result<()> {
+    let bank = &mut ctx.accounts.bank;
+    bank.mint_address = ctx.accounts.mint.key();
+    bank.authority = ctx.accounts.signer.key();
+    bank.liquidation_threshold = liquidation_threshold;
+    bank.max_ltv = max_ltv;
+    Ok(())
+}
+
+pub fn process_init_user(ctx: Context<InitUser>, usdc_address: Pubkey) -> Result<()> {
+    let user = &mut ctx.accounts.user_account;
+    user.owner = ctx.accounts.signer.key();
+    user.usdc_addres = usdc_address;
+
+    let now = Clock::get()?.unix_timestamp;
+    user.last_updated = now;
+    Ok(())
 }
