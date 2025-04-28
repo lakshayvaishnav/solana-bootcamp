@@ -255,8 +255,10 @@ pub struct BuyTicket<'info> {
         bump,
         seeds::program = token_metadata_program.key()
     )]
-    /// CHECK : 
-    pub ticket_metadata : UncheckedAccount<'info>,
+    /// CHECK: checked by metadata smart contract
+    pub ticket_metadata: UncheckedAccount<'info>,
+
+    
 
     #[account(
             mut,
@@ -268,4 +270,7 @@ pub struct BuyTicket<'info> {
     pub token_program: Interface<'info, TokenInterface>,
 
     pub system_program: Program<'info, System>,
+    
+    pub token_metadata_program: Program<'info, Metadata>,
+
 }
