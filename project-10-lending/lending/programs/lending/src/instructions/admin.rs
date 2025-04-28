@@ -30,3 +30,20 @@ pub struct InitBank<'info> {
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
 }
+
+
+#[derive(Accounts)]
+pub struct InitUser <'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+
+    #[account(
+        init,
+        payer = signer,
+        space = 8 + User::INIT_SPACE,
+        seeds = [signer.key().as_ref()],
+        bump,
+    )]
+    pub user_account : Account<'info,User>,
+    pub system_program : Program<'info, System>
+}
