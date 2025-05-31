@@ -1,9 +1,11 @@
 #![allow(warnings)]
 use anchor_lang::prelude::*;
+pub mod constants;
 pub mod error;
 pub mod instructions;
 pub mod state;
 
+use constants::*;
 use error::*;
 use instructions::*;
 use state::*;
@@ -32,5 +34,9 @@ pub mod lending {
 
     pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
         process_withdraw(ctx, amount)
+    }
+
+    pub fn borrow(ctx: Context<Borrow>, amount: u64) -> Result<()> {
+        process_borrow(ctx, amount)
     }
 }
