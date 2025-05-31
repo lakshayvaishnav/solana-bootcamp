@@ -17,6 +17,7 @@ pub struct InitBank<'info> {
     )]
     pub bank: Account<'info, Bank>,
 
+    // token account to hold the tokens for the bank
     #[account(
         init,
         token::mint = mint,
@@ -25,8 +26,17 @@ pub struct InitBank<'info> {
         seeds = [b"treasury", mint.key().as_ref()],
         bump
     )]
+    /*
+     Interface account: -
+    This account must conform to a particular interface — in this case,
+    the interface of an SPL Token Account.
+    The program doesn’t own this account, but it can read and validate its structure.
+    Anchor uses this for accounts it doesn’t expect to create or control, 
+    like SPL token accounts, oracles, etc.
+    */
     pub bank_token_account: InterfaceAccount<'info, TokenAccount>,
 
+    // because we are creating new token accounts
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
 }
