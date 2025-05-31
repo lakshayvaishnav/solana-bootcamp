@@ -45,3 +45,17 @@ pub struct Borrow<'info> {
     pub system_program: Program<'info, System>,
     pub associated_token_program: Program<'info, AssociatedToken>,
 }
+
+// TODO :-
+// 1. Check if user has enough collateral to borrow
+// 2. Warn if borrowing beyond the safe amount but still allow if within the max borrowable amount
+// 3. Make a CPI transfer from the bank's token account to the user's token account
+// 4. Update the user's borrowed amount and total borrowed value
+// 5. Update the bank's total borrows and total borrow shares
+
+pub fn process_borrow(ctx:context<Borrow>, amount:u64) -> Result<()> {
+
+    
+
+    Ok(())
+}
