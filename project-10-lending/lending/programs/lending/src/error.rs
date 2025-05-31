@@ -5,5 +5,7 @@ pub enum ErrorCode {
     #[msg("user has insufficient funds for withdrawl")]
     InsufficientFunds,
     #[msg("requested amount exceeds borrowable amount")]
-    OverBorrowableAmount
+    OverBorrowableAmount,
+    #[msg("request amount exceeds depositable amount")]
+    OverRepay
 }

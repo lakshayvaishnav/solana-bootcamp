@@ -40,5 +40,6 @@ pub struct User {
     pub usdc_addres: Pubkey,        // usdc mint address
     pub health_factor: u64,         // current health factor of the user
     pub last_updated: i64,          // timestamp
-    pub interest_rate:u64,
+    pub interest_rate: u64,
+    pub last_updated_borrow: i64,
 }
