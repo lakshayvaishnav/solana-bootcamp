@@ -72,6 +72,7 @@ pub fn process_deposit (ctx: Context<Deposit>, amount: u64) -> Result<()> {
         }
     }
     bank.total_deposits += amount;
+    bank.total_deposit_shares += user_shares;
 
     Ok(())
 }
