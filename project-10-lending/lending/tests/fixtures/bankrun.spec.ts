@@ -1,0 +1,1 @@
+import "../target/idl/lending.json"
