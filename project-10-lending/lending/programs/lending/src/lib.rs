@@ -10,7 +10,7 @@ use error::*;
 use instructions::*;
 use state::*;
 
-declare_id!("3bGvSbAmPfzabXjfjDb7h7TJo7QvhK1XP3aUBLhyQHXC");
+declare_id!("7XUgyngJrRC1zKddir9QCcEYkQwVrZPbSqsVsdENgwhg");
 
 #[program]
 pub mod lending {

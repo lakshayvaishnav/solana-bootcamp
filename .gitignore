@@ -6,7 +6,10 @@ test-ledger
 /node_modules/
 /package-lock.json
 /.npm/
-
+.anchor
+.DS_Store
+target
+**/*.rs.bk
 # IDE and editor files
 .idea/
 .vscode/
