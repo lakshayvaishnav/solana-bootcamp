@@ -14,15 +14,8 @@ describe("lending", () => {
   const usdcAccount = Keypair.generate();
 
   const program = anchor.workspace.lending as Program<Lending>;
-  const connection = new Connection(clusterApiUrl("devnet"))
 
-  const pyth = new PublicKey("7UVimffxr9ow1uXYxsr4LHAcV58mLzhmwaeKvJ1pjLiE");
-  const pythSolanReciever = new PythSolanaReceiver({
-    connection: connection,
-    // @ts-ignore
-    wallet: provider.wallet,
-
-  })
+ 
 
   it("Is initialized!", async () => {
     const txn = await program.methods.initUser(usdcAccount.publicKey).accounts({
