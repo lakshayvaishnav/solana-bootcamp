@@ -5,7 +5,7 @@ import { clusterApiUrl, Keypair } from "@solana/web3.js";
 import { PythSolanaReceiver } from "@pythnetwork/pyth-solana-receiver";
 import { Connection } from "@solana/web3.js";
 import { PublicKey } from "@solana/web3.js";
-import { createMint, mintTo, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { createAccount, createMint, mintTo, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { BN } from "bn.js";
 
 describe("lending smart contract test", async () => {
@@ -25,6 +25,9 @@ describe("lending smart contract test", async () => {
   const program = anchor.workspace.lending as Program<Lending>;
 
   before(async () => {
+
+    console.log("✅ provider is here : ", provider.publicKey)
+
     mintUSDC = await createMint(
       connection,
       signer,
@@ -72,7 +75,7 @@ describe("lending smart contract test", async () => {
         signer: provider.publicKey,
         mint: mintUSDC,
         tokenProgram: TOKEN_PROGRAM_ID
-      }).rpc({commitment:"confirmed"})
+      }).rpc({ commitment: "confirmed" })
 
     console.log("✅ created bank account : ", initUSDCBankTx);
 
@@ -87,4 +90,40 @@ describe("lending smart contract test", async () => {
     )
     console.log("✅ mint to USDC bank signature : ", mintTx);
   })
+
+  it("create and fund token account : ", async () => {
+    const USDCTokenAccount = await createAccount(
+      connection,
+      signer,
+      mintUSDC,
+      signer.publicKey
+    )
+
+    console.log("USDC Token account created : ", USDCTokenAccount);
+
+    const amount = 10_000 * 10 * 9;
+
+    const mintUSDCTx = await mintTo(
+      connection,
+      signer,
+      mintUSDC,
+      USDCTokenAccount,
+      signer,
+      amount
+    )
+
+    console.log("✅ mint to USDC bank signature : ", mintUSDCTx)
+  })
+
+  it("test deposit", async () => {
+    const depositUSDC = await program.methods.deposit(new BN(10000))
+      .accounts({
+        signer: provider.publicKey,
+        mint: mintUSDC,
+        tokenProgram: TOKEN_PROGRAM_ID
+      }).rpc({ commitment: "confirmed" })
+    console.log("✅ deposit usdc : ", depositUSDC)
+  })
+
+
 });
