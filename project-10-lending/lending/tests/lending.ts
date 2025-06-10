@@ -125,5 +125,16 @@ describe("lending smart contract test", async () => {
     console.log("✅ deposit usdc : ", depositUSDC)
   })
 
+  it("Test Repay", async () => {
+    const repaySOL = await program.methods
+      .repay(new BN(1))
+      .accounts({
+        signer: provider.publicKey,
+        mint: mintSOL,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      })
+      .rpc({ commitment: "confirmed" });
 
+    console.log("Repay SOL", repaySOL);
+  });
 });
