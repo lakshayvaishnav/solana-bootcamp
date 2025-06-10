@@ -5,7 +5,8 @@ import { clusterApiUrl, Keypair } from "@solana/web3.js";
 import { PythSolanaReceiver } from "@pythnetwork/pyth-solana-receiver";
 import { Connection } from "@solana/web3.js";
 import { PublicKey } from "@solana/web3.js";
-import { createMint } from "@solana/spl-token";
+import { createMint, mintTo, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { BN } from "bn.js";
 
 describe("lending smart contract test", async () => {
   // Configure the client to use the local cluster.
@@ -56,7 +57,7 @@ describe("lending smart contract test", async () => {
     );
   });
 
-  it("Is initialized!", async () => {
+  it("test init user ", async () => {
     const txn = await program.methods.initUser(mintUSDC).accounts({
       signer: provider.publicKey
     }).rpc({
@@ -64,4 +65,26 @@ describe("lending smart contract test", async () => {
     })
     console.log(" ✅ created user account : ", txn);
   });
+
+  it("test Init and Fund USDC Bank", async () => {
+    const initUSDCBankTx = await program.methods.initBank(new BN(1), new BN(1))
+      .accounts({
+        signer: provider.publicKey,
+        mint: mintUSDC,
+        tokenProgram: TOKEN_PROGRAM_ID
+      }).rpc({commitment:"confirmed"})
+
+    console.log("✅ created bank account : ", initUSDCBankTx);
+
+    const amount = 10_000 * 10 ** 9;
+    const mintTx = await mintTo(
+      connection,
+      signer,
+      mintUSDC,
+      usdcBankAccount,
+      provider.publicKey,
+      amount
+    )
+    console.log("✅ mint to USDC bank signature : ", mintTx);
+  })
 });
