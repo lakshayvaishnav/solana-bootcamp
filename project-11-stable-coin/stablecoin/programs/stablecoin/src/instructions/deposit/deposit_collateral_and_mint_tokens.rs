@@ -6,8 +6,8 @@ use anchor_spl::{
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
 use crate::{
-    deposit_sol, mint_tokens, Collateral, Config, SEED_COLLATERAL_ACCOUNT, SEED_CONFIG_ACCOUNT,
-    SEED_SOL_ACCOUNT,
+    check_health_factor, deposit_sol, mint_tokens, Collateral, Config, SEED_COLLATERAL_ACCOUNT,
+    SEED_CONFIG_ACCOUNT, SEED_SOL_ACCOUNT,
 };
 
 #[derive(Accounts)]
@@ -76,6 +76,12 @@ pub fn process_deposit_collateral_and_mint_tokens(
         collateral_account.bump = ctx.bumps.collateral_account;
         collateral_account.bump_sol_account = ctx.bumps.sol_account;
     }
+
+    check_health_factor(
+        &ctx.accounts.collateral_account,
+        &ctx.accounts.price_update,
+        &ctx.accounts.config_account,
+    )?;
 
     deposit_sol(
         &ctx.accounts.system_program,

@@ -5,6 +5,21 @@ use crate::{
     Collateral, Config, CustomErrorCode, FEED_ID, MAXMIMUM_AGE, PRICE_FEED_DECIMAL_ADJUSTMENT,
 };
 
+pub fn check_health_factor(
+    collateral: &Account<Collateral>,
+    price_feed: &Account<PriceUpdateV2>,
+    config: &Account<Config>,
+) -> Result<()> {
+    let health_factor = calculate_health_factor(collateral, price_feed, config)?;
+
+    require!(
+        health_factor >= config.min_health_factor,
+        CustomErrorCode::BelowMinHealthFactor
+    );
+
+    Ok(())
+}
+
 pub fn calculate_health_factor(
     collateral: &Account<Collateral>,
     price_feed: &Account<PriceUpdateV2>,
@@ -23,7 +38,6 @@ pub fn calculate_health_factor(
     let health_factor = (collateral_adjusted_for_liquidation_threshold) / collateral.amount_minted;
 
     Ok(health_factor)
-
 }
 
 pub fn get_usd_value(amount_in_lamports: &u64, price_feed: &Account<PriceUpdateV2>) -> Result<u64> {

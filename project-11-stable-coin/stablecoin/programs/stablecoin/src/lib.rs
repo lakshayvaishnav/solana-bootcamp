@@ -2,12 +2,12 @@
 use anchor_lang::prelude::*;
 
 pub mod constants;
-pub mod state;
-pub mod instructions;
 pub mod error;
+pub mod instructions;
+pub mod state;
 
-pub use error::*;
 pub use constants::*;
+pub use error::*;
 pub use instructions::*;
 pub use state::*;
 
@@ -22,8 +22,16 @@ pub mod stablecoin {
         Ok(())
     }
 
-    pub fn update_config(ctx:Context<UpdateConfig>, min_health_factor: u64) -> Result<()> {
+    pub fn update_config(ctx: Context<UpdateConfig>, min_health_factor: u64) -> Result<()> {
         process_update_config(ctx, min_health_factor);
         Ok(())
+    }
+
+    pub fn deposit_collateral_mint_tokens(
+        ctx: Context<DespositCollateralMintTokens>,
+        amount_collateral: u64,
+        amount_to_mint: u64,
+    ) -> Result<()> {
+        process_deposit_collateral_and_mint_tokens(ctx, amount_collateral, amount_to_mint)
     }
 }
