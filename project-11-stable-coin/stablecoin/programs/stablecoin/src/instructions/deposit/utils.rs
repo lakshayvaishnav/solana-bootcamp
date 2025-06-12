@@ -10,8 +10,8 @@ use anchor_spl::{
 use crate::SEED_MINT_ACCOUNT;
 
 pub fn mint_tokens<'info>(
-    token_account: InterfaceAccount<'info, TokenAccount>,
-    mint_account: InterfaceAccount<'info, Mint>,
+    token_account: &InterfaceAccount<'info, TokenAccount>,
+    mint_account: &InterfaceAccount<'info, Mint>,
     token_program: &Program<'info, Token2022>,
     bump: u8,
     amount: u64,
