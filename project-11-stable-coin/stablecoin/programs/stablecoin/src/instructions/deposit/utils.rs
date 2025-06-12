@@ -1,4 +1,7 @@
-use anchor_lang::prelude::*;
+use anchor_lang::{
+    prelude::*,
+    system_program::{transfer, Transfer},
+};
 use anchor_spl::{
     token_2022::{mint_to, Token2022},
     token_interface::{Mint, MintTo, TokenAccount},
@@ -29,8 +32,20 @@ pub fn mint_tokens<'info>(
     )
 }
 
-pub fn deposit_sol<'info> () -> Result<()> {
-
-    
-    Ok(())
+pub fn deposit_sol<'info>(
+    system_program: &Program<'info, System>,
+    from: &Signer<'info>,
+    to: &SystemAccount<'info>,
+    amount: u64,
+) -> Result<()> {
+    transfer(
+        CpiContext::new(
+            system_program.to_account_info(),
+            Transfer {
+                from: from.to_account_info(),
+                to: to.to_account_info(),
+            },
+        ),
+        amount,
+    )
 }
