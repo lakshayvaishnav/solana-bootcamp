@@ -1,7 +1,11 @@
 use anchor_lang::{
     prelude::*,
-    solana_program::example_mocks::solana_sdk::system_program,
     system_program::{transfer, Transfer},
+};
+use anchor_spl::token_interface::{Token2022, TokenAccount};
+use anchor_spl::{
+    token_2022::{burn, Burn},
+    token_interface::Mint,
 };
 
 use crate::SEED_SOL_ACCOUNT;
@@ -27,5 +31,27 @@ pub fn withdraw_sol<'info>(
         ),
         amount,
     );
+    Ok(())
+}
+
+pub fn burn_tokens<'info>(
+    token_program: &Program<'info, Token2022>,
+    mint_account: &InterfaceAccount<'info, Mint>,
+    token_account: &InterfaceAccount<'info, TokenAccount>,
+    authority: &Signer<'info>,
+    amount: u64,
+) -> Result<()> {
+    burn(
+        CpiContext::new(
+            token_program.to_account_info(),
+            Burn {
+                mint: mint_account.to_account_info(),
+                from: token_account.to_account_info(),
+                authority: authority.to_account_info(),
+            },
+        ),
+        amount,
+    );
+
     Ok(())
 }

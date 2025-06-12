@@ -1,9 +1,13 @@
 use anchor_lang::prelude::*;
-use anchor_spl::{token_2022::Token2022, token_interface::Mint};
+use anchor_spl::{
+    token_2022::Token2022,
+    token_interface::{Mint, TokenAccount},
+};
 use pyth_solana_receiver_sdk::price_update::PriceUpdateV2;
 
 use crate::{
-    check_health_factor, Collateral, Config, SEED_COLLATERAL_ACCOUNT, SEED_CONFIG_ACCOUNT,
+    burn_tokens, check_health_factor, withdraw_sol, Collateral, Config, SEED_COLLATERAL_ACCOUNT,
+    SEED_CONFIG_ACCOUNT,
 };
 
 #[derive(Accounts)]
@@ -36,7 +40,7 @@ pub struct RedeemCollateralAndBurnTokens<'info> {
     pub mint_account: InterfaceAccount<'info, Mint>,
 
     #[account(mut)]
-    pub token_account: InterfaceAccount<'info, Mint>,
+    pub token_account: InterfaceAccount<'info, TokenAccount>,
     pub system_program: Program<'info, System>,
     pub token_program: Program<'info, Token2022>,
 }
@@ -56,5 +60,21 @@ pub fn process_redeem_collateral_and_burn_tokens(
         &ctx.accounts.config_account,
     )?;
 
+    burn_tokens(
+        &ctx.accounts.token_program,
+        &ctx.accounts.mint_account,
+        &ctx.accounts.token_account,
+        &ctx.accounts.depositor,
+        amount_to_burn,
+    )?;
+
+    withdraw_sol(
+        ctx.accounts.collateral_account.bump,
+        &ctx.accounts.depositor.key(),
+        &ctx.accounts.system_program,
+        &ctx.accounts.sol_account,
+        &ctx.accounts.depositor.to_account_info(),
+        amount_collateral,
+    )?;
     Ok(())
 }
