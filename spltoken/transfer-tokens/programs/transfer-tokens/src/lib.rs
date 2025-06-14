@@ -10,7 +10,7 @@ declare_id!("FGkMtWCFedRQDA7u3PHHMztDaDBfr7QaTjNV5pfNiXpU");
 
 #[program]
 pub mod transfer_tokens {
-    use anchor_spl::{ token_2022::MintTo, token_interface };
+    use anchor_spl::{  token_2022::{MintTo, TransferChecked}, token_interface };
 
     use super::*;
 
@@ -27,6 +27,27 @@ pub mod transfer_tokens {
 
         let cpi_context = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
         token_interface::mint_to(cpi_context, amount);
+        Ok(())
+    }
+
+    pub fn transfer_tokens(ctx: Context<TransferTokens>) -> Result<()> {
+        let signer_seeds: &[&[&[u8]]] = &[&[b"token", &[ctx.bumps.sender_token_account]]];
+
+        let amount = ctx.accounts.sender_token_account.amount;
+        let decimals = ctx.accounts.mint.decimals;
+
+        let cpi_accounts = TransferChecked {
+            authority: ctx.accounts.sender_token_account.to_account_info(),
+            from: ctx.accounts.sender_token_account.to_account_info(),
+            to: ctx.accounts.recipients_token_account.to_account_info(),
+            mint: ctx.accounts.mint.to_account_info(),
+        };
+
+        let cpi_program = ctx.accounts.token_program.to_account_info();
+
+        let cpi_context = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
+        token_interface::transfer_checked(cpi_context, amount, decimals)?;
+
         Ok(())
     }
 }
