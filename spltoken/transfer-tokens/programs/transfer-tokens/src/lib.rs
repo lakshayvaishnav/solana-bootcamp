@@ -10,7 +10,25 @@ declare_id!("FGkMtWCFedRQDA7u3PHHMztDaDBfr7QaTjNV5pfNiXpU");
 
 #[program]
 pub mod transfer_tokens {
+    use anchor_spl::{ token_2022::MintTo, token_interface };
+
     use super::*;
+
+    pub fn create_and_mint_tokens(ctx: Context<CreateAndMintTokens>, amount: u64) -> Result<()> {
+        let signer_seeds: &[&[&[u8]]] = &[&[b"mint", &[ctx.bumps.mint]]];
+
+        let cpi_accounts = MintTo {
+            authority: ctx.accounts.mint.to_account_info(),
+            mint: ctx.accounts.mint.to_account_info(),
+            to: ctx.accounts.token_account.to_account_info(),
+        };
+
+        let cpi_program = ctx.accounts.token_program.to_account_info();
+
+        let cpi_context = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
+        token_interface::mint_to(cpi_context, amount);
+        Ok(())
+    }
 }
 
 #[derive(Accounts)]
