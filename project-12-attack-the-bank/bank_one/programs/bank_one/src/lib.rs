@@ -3,15 +3,28 @@ use anchor_lang::system_program::{transfer, Transfer};
 
 declare_id!("5nz6RMCJKt4pLXyivbrnphmpEjt8dX4e1o3RM6KQqzP1");
 
+
+#[error_code]
+pub enum ErrorCode {
+    #[msg("already initialized the bank")]
+    AlreadyInitialized
+}
+
 #[program]
 pub mod bank_one {
     use super::*;
 
     pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
+        // fixing the error
+        if ctx.accounts.bank.is_initialized {
+            return Err(error!(ErrorCode::AlreadyInitialized));
+        }
+
         *ctx.accounts.bank = Bank {
             authority: ctx.accounts.authority.key(),
             bank_balance: ctx.accounts.bank.bank_balance + amount,
             bump: ctx.bumps.bank,
+            is_initialized:true
         };
         msg!("{:#?}", ctx.accounts.bank);
 
@@ -71,4 +84,5 @@ pub struct Bank {
     pub authority: Pubkey,
     pub bank_balance: u64,
     pub bump: u8,
+    pub is_initialized : bool
 }
