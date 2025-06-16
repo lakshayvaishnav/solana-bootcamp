@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::system_program::{transfer, Transfer};
 
-declare_id!("HAAzYF1LMBi8R2avDaa4s2VZyMyGzA1RGQNFPXPjctZo");
+declare_id!("5nz6RMCJKt4pLXyivbrnphmpEjt8dX4e1o3RM6KQqzP1");
 
 #[program]
 pub mod bank_one {
