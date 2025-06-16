@@ -31,41 +31,49 @@ describe("stablecoin", () => {
 
   it("Is initialized!", async () => {
 
-    const tx = await program.methods.initializeConfig().accounts({}).rpc({ commitment: "confirmed" });
+    const tx = await program.methods.initializeConfig().accounts({}).rpc({ skipPreflight: true, commitment: "confirmed" });
     console.log("✅ account initialized : ", tx);
 
   });
 
   it("Deposit Collateral and Mint USDC", async () => {
     const amountCollateral = 1_000_000_000;
-    const amountToMint = 1_000_000;
+    const amountToMint = 1_000_000_000;
 
-    const tx = await program.methods.depositCollateralMintTokens(new anchor.BN(amountCollateral), new anchor.BN(amountToMint)).accounts({ priceUpdate: solUsdPriceFeedAccount }).rpc({ commitment: "confirmed" })
+    const tx = await program.methods.
+      depositCollateralMintTokens(new anchor.BN(amountCollateral), new anchor.BN(amountToMint))
+      .accounts({ priceUpdate: solUsdPriceFeedAccount }).rpc({ skipPreflight: true, commitment: "confirmed" })
 
     console.log("✅ collateral deposited and tokens minted : ", tx)
   })
 
   it("Reddeem Collateral and Burn USDC", async () => {
     const amountCollateral = 500_000_000;
-    const amountToBurn = 500_000;
+    const amountToBurn = 500_000_000;
 
-    const tx = await program.methods.reddemCollateralAndBurnTokens(new anchor.BN(amountCollateral), new anchor.BN(amountToBurn)).accounts({ priceUpdate: solUsdPriceFeedAccount }).rpc({ commitment: "confirmed" })
+    const tx = await program.methods
+      .reddemCollateralAndBurnTokens(new anchor.BN(amountCollateral), new anchor.BN(amountToBurn))
+      .accounts({ priceUpdate: solUsdPriceFeedAccount }).rpc({ skipPreflight: true, commitment: "confirmed" })
 
     console.log("✅ reddeem collateral and burned tokens", tx)
   })
 
   it("update config", async () => {
-    const tx = await program.methods.updateConfig(new anchor.BN(100)).accounts({}).rpc({ commitment: "confirmed" })
+    const tx = await program.methods.updateConfig(new anchor.BN(100))
+      .accounts({}).rpc({ skipPreflight: true, commitment: "confirmed" })
     console.log("✅ update config : ", tx);
   })
 
   it("Liquidate", async () => {
-    const tx = await program.methods.liquidate(new anchor.BN(1)).accounts({}).rpc({ commitment: "confirmed" })
+    const amountToBurn = 500_000;
+    const tx = await program.methods.liquidate(new anchor.BN(amountToBurn))
+      .accounts({ collateralAccount, priceUpdate: solUsdPriceFeedAccount }).rpc({ skipPreflight: true, commitment: "confirmed" })
     console.log("✅ liquidate : ", tx)
   })
 
   it("update config ", async () => {
-    const tx = await program.methods.updateConfig(new anchor.BN(1)).accounts({}).rpc({ commitment: "confirmed" })
+    const tx = await program.methods.updateConfig(new anchor.BN(1))
+      .accounts({}).rpc({ skipPreflight: true, commitment: "confirmed" })
     console.log("✅ updated config again : ", tx);
   })
 });
