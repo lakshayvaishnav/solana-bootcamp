@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-declare_id!("FxCXeDFCSXMPaTB7PQBTKuPHiowPxGQoQaTTL4x2tKQo");
+declare_id!("7qkx9Bp48AtJtrNjUzwfURH7PnJUNZNCwYAcUPJwx5Co");
 
 #[program]
 pub mod fake_bank {

@@ -1,7 +1,9 @@
+#![allow(warnings)]
+
 use anchor_lang::prelude::*;
 use anchor_lang::system_program::{transfer, Transfer};
 
-declare_id!("H2vvatVxBg1LufZqsXBuc4BHgK5TKLmrGY7rSEK2dD2L");
+declare_id!("GjFuGDMbTB9NQuCXrRKBMPeBdYZJJd1hZsfULEqyeEHU");
 
 #[program]
 pub mod bank_three {
@@ -81,7 +83,7 @@ pub struct Deposit<'info> {
 pub struct Withdraw<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
-    pub bank: AccountInfo<'info>,
+    pub bank: SystemAccount<'info>,
     #[account(
         mut,
         seeds = [b"vault"],

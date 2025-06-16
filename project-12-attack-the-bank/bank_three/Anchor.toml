@@ -5,14 +5,14 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-bank_three = "H2vvatVxBg1LufZqsXBuc4BHgK5TKLmrGY7rSEK2dD2L"
-fake_bank = "FxCXeDFCSXMPaTB7PQBTKuPHiowPxGQoQaTTL4x2tKQo"
+bank_three = "GjFuGDMbTB9NQuCXrRKBMPeBdYZJJd1hZsfULEqyeEHU"
+fake_bank = "7qkx9Bp48AtJtrNjUzwfURH7PnJUNZNCwYAcUPJwx5Co"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

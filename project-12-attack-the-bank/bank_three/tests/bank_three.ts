@@ -35,7 +35,7 @@ describe("bank_three", () => {
         lamports: transferAmount,
       })
     );
-    await provider.sendAndConfirm(transferTx);
+    await provider.sendAndConfirm(transferTx); 
   });
 
   it("Deposit to Bank", async () => {
@@ -63,7 +63,7 @@ describe("bank_three", () => {
       connection,
       transaction,
       [wallet.payer],
-      { commitment: "confirmed" }
+      { commitment: "confirmed" } 
     );
 
     console.log("Your transaction signature", transactionSignature);
