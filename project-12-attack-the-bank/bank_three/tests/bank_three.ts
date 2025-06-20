@@ -20,7 +20,7 @@ describe("bank_three", () => {
     [Buffer.from("vault")],
     program.programId
   );
-
+ 
   const [fakeBank] = anchor.web3.PublicKey.findProgramAddressSync(
     [Buffer.from("bank")],
     programFakeBank.programId
