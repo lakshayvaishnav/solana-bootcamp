@@ -13,6 +13,7 @@ crate-type = ["cdylib", "lib"]
 solana-program = "1.18.26"
 
 [dev-dependencies]
+solana-client = "1.18.26"
 solana-program-test = "1.18.26"
 solana-sdk = "1.18.26"
 tokio = "1.45.1"
