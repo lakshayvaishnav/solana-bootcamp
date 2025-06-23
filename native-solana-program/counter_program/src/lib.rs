@@ -85,7 +85,7 @@ fn process_initialize_counter(
         count: initial_value,
     };
 
-    // Get a mutable reference to the counter account's data
+    // Get a mutable reference to the counter account's data field
     let mut account_data = &mut counter_account.data.borrow_mut()[..];
 
     // Serialize the CounterAccount struct into the account's data
