@@ -1,3 +1,4 @@
+#![allow(warnings)]
 use borsh::{ BorshDeserialize, BorshSerialize };
 use solana_program::{
     account_info::{ next_account_info, AccountInfo },
@@ -12,17 +13,27 @@ use solana_program::{
     msg,
 };
 
-entrypoint!(process_insturction);
+entrypoint!(process_instruction);
 
-pub fn process_insturction(
+pub fn process_instruction(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
     instruction_data: &[u8]
 ) -> ProgramResult {
+    // Unpack instruction data
+    let instruction = CounterInstruction::unpack(instruction_data)?;
+
+    // Match instruction type
+    match instruction {
+        CounterInstruction::InitializeCounter { initial_value } => {
+            process_initialize_counter(program_id, accounts, initial_value)?;
+        }
+        CounterInstruction::IncrementCounter => process_increment_counter(program_id, accounts)?,
+    }
     Ok(())
 }
 
-impl CounterInsturction {
+impl CounterInstruction {
     pub fn unpack(input: &[u8]) -> Result<Self, ProgramError> {
         // get the instruction variant from the first byte
         let (&variant, rest) = input.split_first().ok_or(ProgramError::InvalidInstructionData)?;
@@ -32,7 +43,7 @@ impl CounterInsturction {
                 let initial_value = u64::from_le_bytes(
                     rest.try_into().map_err(|_| ProgramError::InvalidInstructionData)?
                 );
-                Ok(Self::InitalizeCounter { initial_value })
+                Ok(Self::InitializeCounter { initial_value })
             }
             1 => Ok(Self::IncrementCounter), // no additional data needed
             _ => Err(ProgramError::InvalidInstructionData),
@@ -46,8 +57,8 @@ pub struct CounterAccount {
 }
 
 #[derive(BorshDeserialize, BorshSerialize, Debug)]
-pub enum CounterInsturction {
-    InitalizeCounter {
+pub enum CounterInstruction {
+    InitializeCounter {
         initial_value: u64, // variant 0
     },
     IncrementCounter, // variant 1
@@ -125,4 +136,36 @@ fn process_increment_counter(program_id: &Pubkey, accounts: &[AccountInfo]) -> P
     msg!("Counter incremented to : {}", counter_data.count);
 
     Ok(())
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use solana_program_test::*;
+    use solana_sdk::{
+        instruction::{ AccountMeta, Instruction },
+        signature::{ keypair, Keypair, Signer },
+        system_program,
+        transaction::Transaction,
+    };
+
+    #[tokio::test]
+    async fn test_counter_program() {
+        let program_id = Pubkey::new_unique();
+        let (mut banks_client, payer, recent_blockhash) = ProgramTest::new(
+            "counter_program",
+            program_id,
+            processor!(process_instruction)
+        ).start().await;
+
+        // create a new keypair to use as the address for our counter account
+        let counter_keypair = Keypair::new();
+        let initial_value: u64 = 42;
+
+        // step 1 : initalize the counter:
+        println!("testing counter initialization");
+
+        // create initialize instruction
+        let mut init_instruction_data = vec![0];
+    }
 }
