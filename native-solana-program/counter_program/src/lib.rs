@@ -33,6 +33,14 @@ pub fn process_instruction(
     Ok(())
 }
 
+#[derive(BorshDeserialize, BorshSerialize, Debug)]
+pub enum CounterInstruction {
+    InitializeCounter {
+        initial_value: u64, // variant 0
+    },
+    IncrementCounter, // variant 1
+}
+
 impl CounterInstruction {
     pub fn unpack(input: &[u8]) -> Result<Self, ProgramError> {
         // get the instruction variant from the first byte
@@ -56,13 +64,7 @@ pub struct CounterAccount {
     count: u64,
 }
 
-#[derive(BorshDeserialize, BorshSerialize, Debug)]
-pub enum CounterInstruction {
-    InitializeCounter {
-        initial_value: u64, // variant 0
-    },
-    IncrementCounter, // variant 1
-}
+
 
 fn process_initialize_counter(
     program_id: &Pubkey,
@@ -143,6 +145,7 @@ mod test {
     use super::*;
     use solana_program_test::*;
     use solana_sdk::{
+        address_lookup_table::program,
         instruction::{ AccountMeta, Instruction },
         signature::{ keypair, Keypair, Signer },
         system_program,
@@ -163,9 +166,74 @@ mod test {
         let initial_value: u64 = 42;
 
         // step 1 : initalize the counter:
-        println!("testing counter initialization");
+        println!("🔫 testing counter initialization");
 
         // create initialize instruction
-        let mut init_instruction_data = vec![0];
+        // vec![] it is a macro used to create vec<T> a growable heap allocated vector
+        // vec![0] creates a vector containing single element 0
+        let mut init_instruction_data = vec![0]; // 0 => initialize instruction
+        init_instruction_data.extend_from_slice(&initial_value.to_le_bytes());
+
+        let initalize_instruction = Instruction::new_with_bytes(
+            program_id,
+            &init_instruction_data,
+            vec![
+                AccountMeta::new(counter_keypair.pubkey(), true),
+                AccountMeta::new(payer.pubkey(), true),
+                AccountMeta::new_readonly(system_program::id(), false)
+            ]
+        );
+
+        // sendtransaction with initialize instruction
+        let mut transaction = Transaction::new_with_payer(
+            &[initalize_instruction],
+            Some(&payer.pubkey())
+        );
+        transaction.sign(&[&payer, &counter_keypair], recent_blockhash);
+        banks_client.process_transaction(transaction).await.unwrap();
+
+        // check account data
+        let account = banks_client
+            .get_account(counter_keypair.pubkey()).await
+            .expect("Failed to get counter account");
+
+        if let Some(account_data) = account {
+            let counter = CounterAccount::try_from_slice(&account_data.data).expect(
+                "Failed to deserialize counter data"
+            );
+            assert_eq!(counter.count, 42);
+            println!(" ✅ counter initialized successfully with values : {}", counter.count);
+        }
+
+        println!("🔫 Testing counter increment...");
+
+        // create increment instruction
+        let increment_instruction = Instruction::new_with_bytes(
+            program_id,
+            &[1],
+            vec![AccountMeta::new(counter_keypair.pubkey(), true)]
+        );
+
+        // send transaction with increment instruction
+        let mut transaction = Transaction::new_with_payer(
+            &[increment_instruction],
+            Some(&payer.pubkey())
+        );
+        transaction.sign(&[&payer, &counter_keypair], recent_blockhash);
+        banks_client.process_transaction(transaction).await.unwrap();
+
+        // check account data
+        let account = banks_client
+            .get_account(counter_keypair.pubkey()).await
+            .expect("failed to get counter account");
+
+        if let Some(account_data) = account {
+            let counter = CounterAccount::try_from_slice(&account_data.data).expect(
+                "failed to deserialize counter data"
+            );
+            assert_eq!(counter.count, 43);
+
+            println!("✅ counter increment successfully to : {}", counter.count);
+        }
     }
 }
