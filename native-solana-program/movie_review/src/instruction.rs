@@ -17,7 +17,7 @@ struct MovieReviewPayload {
 }
 
 impl MovieReviewInstruction {
-    fn unpack(input: &[u8]) -> Result<Self, ProgramError> {
+   pub fn unpack(input: &[u8]) -> Result<Self, ProgramError> {
         let (&variant, rest) = input.split_first().ok_or(ProgramError::InvalidInstructionData)?;
 
         let payload = MovieReviewPayload::try_from_slice(&rest)?;
