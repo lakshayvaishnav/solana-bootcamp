@@ -10,8 +10,8 @@ pub enum MovieReviewInstruction {
     UpdateMovieReview {
         title: String,
         rating: u8,
-        description: String
-    }
+        description: String,
+    },
 }
 
 #[derive(BorshDeserialize)]
@@ -22,7 +22,7 @@ struct MovieReviewPayload {
 }
 
 impl MovieReviewInstruction {
-   pub fn unpack(input: &[u8]) -> Result<Self, ProgramError> {
+    pub fn unpack(input: &[u8]) -> Result<Self, ProgramError> {
         let (&variant, rest) = input.split_first().ok_or(ProgramError::InvalidInstructionData)?;
 
         let payload = MovieReviewPayload::try_from_slice(&rest)?;
@@ -30,6 +30,13 @@ impl MovieReviewInstruction {
         match variant {
             0 =>
                 Ok(Self::AddMovieReview {
+                    title: payload.title,
+                    rating: payload.rating,
+                    description: payload.description,
+                }),
+
+            1 =>
+                Ok(Self::UpdateMovieReview {
                     title: payload.title,
                     rating: payload.rating,
                     description: payload.description,
