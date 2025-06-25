@@ -20,7 +20,6 @@ pub mod error;
 
 use error::ReviewError;
 use instruction::MovieReviewInstruction;
-
 use crate::state::MovieAccountState;
 
 entrypoint!(process_instruction);
