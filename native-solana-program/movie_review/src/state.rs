@@ -1,14 +1,29 @@
-use borsh::{ BorshDeserialize, BorshSerialize };
-use solana_program::{ program_pack::{ IsInitialized, Sealed }, pubkey::Pubkey };
+use borsh::{BorshDeserialize, BorshSerialize};
+use solana_program::{
+    program_pack::{IsInitialized, Sealed},
+    pubkey::Pubkey,
+};
 
-#[derive(BorshDeserialize, BorshSerialize)]
+#[derive(BorshSerialize, BorshDeserialize)]
 pub struct MovieAccountState {
-    pub descriminator: String,
+    pub discriminator: String,
     pub is_initialized: bool,
     pub reviewer: Pubkey,
+    pub rating: u8,
     pub title: String,
     pub description: String,
-    pub rating: u8,
+}
+
+impl MovieAccountState {
+    pub const DISCRIMINATOR: &'static str = "review";
+
+    pub fn get_account_size(title: String, description: String) -> usize {
+        return (4 + MovieAccountState::DISCRIMINATOR.len())
+            + 1
+            + 1
+            + (4 + title.len())
+            + (4 + description.len());
+    }
 }
 
 #[derive(BorshSerialize, BorshDeserialize)]
@@ -18,7 +33,12 @@ pub struct MovieCommentCounter {
     pub counter: u64,
 }
 
-#[derive(BorshDeserialize, BorshSerialize)]
+impl MovieCommentCounter {
+    pub const DISCRIMINATOR: &'static str = "counter";
+    pub const SIZE: usize = (4 + MovieCommentCounter::DISCRIMINATOR.len()) + 1 + 8;
+}
+
+#[derive(BorshSerialize, BorshDeserialize)]
 pub struct MovieComment {
     pub discriminator: String,
     pub is_initialized: bool,
@@ -28,11 +48,14 @@ pub struct MovieComment {
     pub count: u64,
 }
 
-/*
-    Sealed is Solana's version of Rust's Sized trait. 
-    This simply specifies that MovieAccountState has a known size and 
-    provides for some compiler optimizations.
-*/
+impl MovieComment {
+    pub const DISCRIMINATOR: &'static str = "comment";
+
+    pub fn get_account_size(comment: String) -> usize {
+        return (4 + MovieComment::DISCRIMINATOR.len()) + 1 + 32 + 32 + (4 + comment.len()) + 8;
+    }
+}
+
 impl Sealed for MovieAccountState {}
 
 impl IsInitialized for MovieAccountState {
@@ -50,33 +73,5 @@ impl IsInitialized for MovieCommentCounter {
 impl IsInitialized for MovieComment {
     fn is_initialized(&self) -> bool {
         self.is_initialized
-    }
-}
-
-impl MovieAccountState {
-    pub const DISCRIMINATOR: &'static str = "review";
-
-    pub fn get_account_size(title: String, description: String) -> usize {
-        return (
-            4 +
-            MovieAccountState::DISCRIMINATOR.len() +
-            1 +
-            1 +
-            (4 + title.len()) +
-            (4 + description.len())
-        );
-    }
-}
-
-impl MovieCommentCounter {
-    pub const DISCRIMINATOR: &'static str = "counter";
-    pub const SIZE: usize = 4 + MovieCommentCounter::DISCRIMINATOR.len() + 1 + 8;
-}
-
-impl MovieComment {
-    pub const DISCRIMINATOR: &'static str = "comment";
-
-    pub fn get_account_size(comment: String) -> usize {
-        return 4 + MovieComment::DISCRIMINATOR.len() + 1 + 32 + 32 + (4 + comment.len()) + 8;
     }
 }
