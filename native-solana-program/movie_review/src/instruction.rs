@@ -15,6 +15,7 @@ pub enum MovieInstruction {
     AddComment {
         comment: String,
     },
+    IntializeMint,
 }
 
 #[derive(BorshDeserialize)]
