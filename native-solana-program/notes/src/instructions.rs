@@ -6,13 +6,13 @@ pub enum NotesInstruction {
         title: String,
         description: String,
     },
-    UpdateNote {
-        title: String,
-        description: String,
-    },
-    DeleteNote {
-        title: String,
-    },
+    // UpdateNote {
+    //     title: String,
+    //     description: String,
+    // },
+    // DeleteNote {
+    //     title: String,
+    // },
 }
 
 #[derive(BorshDeserialize)]
@@ -35,19 +35,19 @@ impl NotesInstruction {
                 Ok(Self::AddNote { title: payload.title, description: payload.description })
             }
 
-            1 => {
-                let payload = NotesPayload::try_from_slice(rest).map_err(
-                    |_| ProgramError::InvalidInstructionData
-                )?;
-                Ok(Self::UpdateNote { title: payload.title, description: payload.description })
-            }
+            // 1 => {
+            //     let payload = NotesPayload::try_from_slice(rest).map_err(
+            //         |_| ProgramError::InvalidInstructionData
+            //     )?;
+            //     Ok(Self::UpdateNote { title: payload.title, description: payload.description })
+            // }
 
-            2 => {
-                let payload = NotesPayload::try_from_slice(rest).map_err(
-                    |_| ProgramError::InvalidInstructionData
-                )?;
-                Ok(Self::DeleteNote { title: payload.title })
-            }
+            // 2 => {
+            //     let payload = NotesPayload::try_from_slice(rest).map_err(
+            //         |_| ProgramError::InvalidInstructionData
+            //     )?;
+            //     Ok(Self::DeleteNote { title: payload.title })
+            // }
 
             _ => Err(ProgramError::InvalidInstructionData),
         }
