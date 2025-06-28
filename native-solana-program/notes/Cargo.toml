@@ -1,0 +1,8 @@
+[package]
+name = "notes"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+solana-program="1.18.26"
+borsh = "1.5.7"
