@@ -2,6 +2,7 @@ use borsh::{ BorshDeserialize, BorshSerialize };
 use solana_program::{
     account_info::{ next_account_info, AccountInfo },
     entrypoint::ProgramResult,
+    borsh1::try_from_slice_unchecked,
     msg,
     program::invoke_signed,
     program_error::ProgramError,
@@ -10,6 +11,8 @@ use solana_program::{
     system_instruction,
     sysvar::Sysvar,
 };
+
+
 
 use crate::{ instructions::NotesInstruction, state::NotesAccountState };
 
@@ -74,8 +77,10 @@ pub fn process_add_notes(
     msg!(" ✅ pda created successfully ");
 
     msg!("unpacking state account");
-    let account_data = &mut NotesAccountState::try_from_slice(&pda_account.data.borrow())?;
+    // let account_data = &mut NotesAccountState::try_from_slice(&pda_account.data.borrow())?;
+    let mut account_data = try_from_slice_unchecked::<NotesAccountState>(&pda_account.data.borrow()).unwrap();
 
+    msg!("borrowed account data ");
     account_data.title = title;
     account_data.description = description;
     account_data.is_initialized = true;
