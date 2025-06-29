@@ -162,15 +162,63 @@ mod tests {
     #[tokio::test]
     async fn test_add_notes_instruction() {
         let program_id = Pubkey::new_unique();
-        let program_test = ProgramTest::new(
-            "notes",
-            program_id,
-            processor!(process_instruction)
+        let program_test = ProgramTest::new("notes", program_id, processor!(process_instruction));
+
+        let (mut banks_client, payer, recent_blockhash) = program_test.start().await;
+
+        let title: String = "job leni h".to_owned();
+        let description: String = "sample description it is".to_owned();
+
+        let add_notes_ix = create_add_note_ix(payer.pubkey(), program_id, title, description, SYSTEM_PROGRAM_ID);
+
+        let mut transaction = Transaction::new_with_payer(&[add_notes_ix], Some(&payer.pubkey()));
+
+        transaction.sign(&[&payer], recent_blockhash);
+
+        assert_matches!(banks_client.process_transaction(transaction).await, Ok(_));
+
+    }
+
+    fn create_add_note_ix(
+        payer: Pubkey,
+        program_id: Pubkey,
+        title: String,
+        description: String,
+        system_program: Pubkey
+    ) -> Instruction {
+        let (add_note_pda, _bump_seed) = Pubkey::find_program_address(
+            &[payer.as_ref(), title.as_bytes()],
+            &program_id
         );
 
-        let (mut banks_client , payer , recent_blockchash) = program_test.start().await;
+        let mut data_vec = vec![0];
 
-        let title : String = "job leni h".to_owned();
-        let description : String = "sample description it is".to_owned();
+        /*
+        
+        [discriminant] + [title.len as u32 (4 bytes)] + [title as bytes] + ...
+        .to_le_bytes() used for ints
+        .into_bytes for string
+         */
+
+        // appended the length of title
+        data_vec.append(
+            &mut TryInto::<u32>::try_into(title.len()).unwrap().to_le_bytes().try_into().unwrap()
+        );
+
+        // appending the title
+        data_vec.append(&mut title.into_bytes());
+
+        // appending the len of description
+        data_vec.append(&mut TryInto::<u32>::try_into(description.len()).unwrap().to_le_bytes().try_into().unwrap());
+
+        // appending the description
+        data_vec.append(&mut description.into_bytes());
+
+        Instruction { program_id: program_id, accounts: vec![
+            AccountMeta::new_readonly(payer, true),
+            AccountMeta::new(add_note_pda, false),
+            AccountMeta::new_readonly(system_program, false),
+        ], data: data_vec }
+
     }
 }
