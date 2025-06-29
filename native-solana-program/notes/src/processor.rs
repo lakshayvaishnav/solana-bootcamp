@@ -1,18 +1,9 @@
-use borsh::{BorshDeserialize, BorshSerialize};
+use borsh::{ BorshDeserialize, BorshSerialize };
 use solana_program::{
-    account_info::{ next_account_info, AccountInfo },
-    address_lookup_table::{ instruction, program },
-    entrypoint::ProgramResult,
-    msg,
-    program::invoke_signed,
-    pubkey::Pubkey,
-    rent::Rent,
-    system_instruction,
-    sysvar::Sysvar,
+    account_info::{ next_account_info, AccountInfo }, address_lookup_table::{ instruction, program }, entrypoint::ProgramResult, msg, program::invoke_signed, pubkey::Pubkey, rent::Rent, system_instruction, system_program, sysvar::Sysvar
 };
 
 use crate::{ instructions::NotesInstruction, state::NotesAccountState };
-
 
 pub fn process_instruction(
     program_id: &Pubkey,
@@ -22,7 +13,13 @@ pub fn process_instruction(
     let instruction = NotesInstruction::Unpack(instruction_data)?;
 
     match instruction {
-        NotesInstruction::AddNote { title, description } => {process_add_notes(program_id, accounts, title, description)}
+        NotesInstruction::AddNote { title, description } => {
+            process_add_notes(program_id, accounts, title, description)
+        }
+
+        NotesInstruction::UpdateNote { title, description } => {
+            process_update_notes(program_id, accounts, title, description)
+        }
     }
 }
 
@@ -65,7 +62,7 @@ pub fn process_add_notes(
     msg!(" ✅ pda created successfully ");
 
     msg!("unpacking state account");
-    let  account_data = &mut NotesAccountState::try_from_slice(&pda_account.data.borrow())?;
+    let account_data = &mut NotesAccountState::try_from_slice(&pda_account.data.borrow())?;
 
     account_data.title = title;
     account_data.description = description;
@@ -75,5 +72,29 @@ pub fn process_add_notes(
     account_data.serialize(&mut &mut pda_account.data.borrow_mut()[..])?;
     msg!("satate account serialized");
 
+    Ok(())
+}
+
+fn process_update_notes(
+    program_id: &Pubkey,
+    accounts: &[AccountInfo],
+    title: String,
+    description: String
+) -> ProgramResult {
+    let account_info_iter = &mut accounts.iter();
+
+    let initializer = next_account_info(account_info_iter)?;
+    let pda_account = next_account_info(account_info_iter)?;
+    let system_program = next_account_info(account_info_iter)?;
+
+
+    // updating the account details 
+    
+    msg!("unpacking the account details");
+    let account_data = &mut NotesAccountState::try_from_slice(&pda_account.data.borrow())?;
+
+
+    account_data.title = title;
+    account_data.description = description;
     Ok(())
 }

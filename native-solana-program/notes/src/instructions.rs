@@ -6,10 +6,10 @@ pub enum NotesInstruction {
         title: String,
         description: String,
     },
-    // UpdateNote {
-    //     title: String,
-    //     description: String,
-    // },
+    UpdateNote {
+        title: String,
+        description: String,
+    },
     // DeleteNote {
     //     title: String,
     // },
